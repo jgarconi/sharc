@@ -8,7 +8,7 @@ Created on Mon Dec 26 17:32:02 2016
 from sharc.support.enumerations import Action 
 from sharc.model import Model
 
-from thread_simulation import ThreadSimulation
+from sharc.thread_simulation import ThreadSimulation
 
 class Controller:
     """

@@ -838,7 +838,7 @@ if __name__ == '__main__':
             self.bandwidth  = np.random.rand()
             self.ue_noise_figure = np.random.rand()
             self.minimum_separation_distance_bs_ue = 10
-            self.spurious_emissions = -30
+            self.spurious_emissions = -13
             self.intersite_distance = 1000
 
     params = ParamsAux()
