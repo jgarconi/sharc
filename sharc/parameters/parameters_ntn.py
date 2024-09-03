@@ -65,24 +65,19 @@ class ParametersNTN(ParametersBase):
 
         # Now do the sanity check for some parameters
         if self.num_sectors not in [1, 7, 19]:
-            raise ValueError(f"ParametersNTN: Invalid number of sectors {
-                             self.num_sectors}")
+            raise ValueError(f"ParametersNTN: Invalid number of sectors {self.num_sectors}")
 
         if self.bs_height <= 0:
-            raise ValueError(f"ParametersNTN: bs_height must be greater than 0, but is {
-                             self.bs_height}")
+            raise ValueError(f"ParametersNTN: bs_height must be greater than 0, but is {self.bs_height}")
 
         if self.cell_radius <= 0:
-            raise ValueError(f"ParametersNTN: cell_radius must be greater than 0, but is {
-                             self.cell_radius}")
+            raise ValueError(f"ParametersNTN: cell_radius must be greater than 0, but is {self.cell_radius}")
 
         if self.intersite_distance <= 0:
-            raise ValueError(f"ParametersNTN: intersite_distance must be greater than 0, but is {
-                             self.intersite_distance}")
+            raise ValueError(f"ParametersNTN: intersite_distance must be greater than 0, but is {self.intersite_distance}")
 
         if not isinstance(self.bs_conducted_power, int) or self.bs_conducted_power <= 0:
-            raise ValueError(f"ParametersNTN: bs_conducted_power must be a positive integer, but is {
-                             self.bs_conducted_power}")
+            raise ValueError(f"ParametersNTN: bs_conducted_power must be a positive integer, but is {self.bs_conducted_power}")
 
         if not isinstance(self.bs_backoff_power, int) or self.bs_backoff_power < 0:
             raise ValueError(
