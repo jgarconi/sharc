@@ -34,6 +34,7 @@ from sharc.antenna.antenna_rs1813 import AntennaRS1813
 from sharc.antenna.antenna_rs1861_9a import AntennaRS1861_9A
 from sharc.antenna.antenna_rs1861_9b import AntennaRS1861_9B
 from sharc.antenna.antenna_rs1861_9c import AntennaRS1861_9C
+from sharc.antenna.antenna_rs2043 import AntennaRS2043
 from sharc.antenna.antenna_s465 import AntennaS465
 from sharc.antenna.antenna_modified_s465 import AntennaModifiedS465
 from sharc.antenna.antenna_s580 import AntennaS580
@@ -699,13 +700,25 @@ class StationFactory(object):
         eess_passive_sensor.is_space_station = True
 
         # incidence angle according to Rec. ITU-R RS.1861-0
-        incidence_angle = math.degrees(math.asin(
-                math.sin(math.radians(param.nadir_angle))*(1 + (param.altitude/EARTH_RADIUS))))
-
-        # distance to field of view centre according to Rec. ITU-R RS.1861-0
-        distance = EARTH_RADIUS * \
-                    math.sin(math.radians(incidence_angle - param.nadir_angle)) / \
-                    math.sin(math.radians(param.nadir_angle))
+        if param.distribution_enable:
+            if param.distribution_type == "UNIFORM":
+                param.nadir_angle = np.random.uniform(param.nadir_angle_distribution[0],
+                                                  param.nadir_angle_distribution[1])
+                incidence_angle = math.degrees(math.asin(math.sin(math.radians(param.nadir_angle)) *
+                                                         (1 + (param.altitude / EARTH_RADIUS))))
+                # distance to field of view centre according to Rec. ITU-R RS.1861-0
+                distance = EARTH_RADIUS * \
+                           math.sin(math.radians(incidence_angle - param.nadir_angle)) / \
+                           math.sin(math.radians(param.nadir_angle))
+        else:
+            #print(param.nadir_angle)
+            incidence_angle = math.degrees(math.asin(math.sin(math.radians(param.nadir_angle)) * \
+                                                     (1 + (param.altitude/EARTH_RADIUS))))
+            #print(incidence_angle)
+            # distance to field of view centre according to Rec. ITU-R RS.1861-0
+            distance = EARTH_RADIUS * \
+                        math.sin(math.radians(incidence_angle - param.nadir_angle)) / \
+                        math.sin(math.radians(param.nadir_angle))
 
         # Elevation at ground (centre of the footprint)
         theta_grd_elev = 90 - incidence_angle
@@ -732,6 +745,8 @@ class StationFactory(object):
             eess_passive_sensor.antenna = np.array([AntennaRS1861_9B(param)])
         elif param.antenna_pattern == "ITU-R RS.1861 9c":
             eess_passive_sensor.antenna = np.array([AntennaRS1861_9C()])
+        elif param.antenna_pattern == "ITU-R RS.2043":
+            eess_passive_sensor.antenna = np.array([AntennaRS2043()])
         else:
             sys.stderr.write("ERROR\nInvalid EESS PASSIVE antenna pattern: " + param.antenna_pattern)
             sys.exit(1)
@@ -739,7 +754,7 @@ class StationFactory(object):
         eess_passive_sensor.bandwidth = param.bandwidth
         # Noise temperature is not an input parameter for EESS passive.
         # It is included here to calculate the useless I/N values
-        eess_passive_sensor.noise_temperature = 250
+        eess_passive_sensor.noise_temperature = 500
         eess_passive_sensor.thermal_noise = -500
         eess_passive_sensor.total_interference = -500
 

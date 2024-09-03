@@ -1,5 +1,13 @@
 {
+    "editor.rulers": [120],
+    "[python]": {
+        "editor.rulers": [
+            120
+        ]
+    },
+    "python.REPL.enableREPLSmartSend": false,
     "pylint.args": [
+        "--extension-pkg-whitelist=numpy",
         "\"pylint.args\": [\"--max-line-length=120\"]"
     ]
 }

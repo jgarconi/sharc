@@ -1,3 +1,4 @@
+import os
 import unittest
 from sharc.parameters.parameters import Parameters
 
@@ -8,7 +9,9 @@ class ParametersTest(unittest.TestCase):
 
     def setUp(self):
         self.parameters = Parameters()
-        self.parameters.set_file_name("./parameters/parameters_for_testing.ini")
+        param_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),\
+                                 "parameters_for_testing.ini")
+        self.parameters.set_file_name(param_file)
         self.parameters.read_params()
 
     def test_parameters_imt(self):
@@ -285,6 +288,9 @@ class ParametersTest(unittest.TestCase):
         self.assertEqual(self.parameters.eess_passive.imt_altitude, 20.1)
         self.assertEqual(self.parameters.eess_passive.imt_lat_deg, -22.9)
         self.assertEqual(self.parameters.eess_passive.season, "WINTER")
+        self.assertEqual(self.parameters.eess_passive.distribution_enable, True)
+        self.assertEqual(self.parameters.eess_passive.distribution_type, "UNIFORM")
+        self.assertEqual(self.parameters.eess_passive.nadir_angle_distribution, (18.6, 49.4))
 
 if __name__ == '__main__':
     unittest.main()

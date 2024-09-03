@@ -131,6 +131,7 @@ if __name__ == '__main__':
 
     # Create mask
     msk = SpectralMaskImt(sta_type,freq,band,spurious_emissions,scenario)
+
     msk.set_mask(p_tx)
     
     # Frequencies
