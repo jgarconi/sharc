@@ -113,8 +113,8 @@ class SpectralMaskImt(SpectralMask):
                                           self.spurious_emissions])
             else:
                 # Dummy spectral mask, for testing purposes only
-                #mask_dbm = np.array([-10, -20, self.spurious_emissions])
-                mask_dbm = np.array([-10, -20, -13])
+                mask_dbm = np.array([-10, -20, self.spurious_emissions])
+                #mask_dbm = np.array([-10, -20, -13])
                 #mask_dbm = np.array([0, 0, 0])
                  
         self.mask_dbm = np.concatenate((mask_dbm[::-1],np.array([self.p_tx]),

@@ -332,6 +332,8 @@ class PlotAntennaPattern(object):
 
         phi_escan = 0
         theta_tilt = 90
+        phi_look = 0
+        theta_look = 90
 
         # Plot horizontal pattern
         phi = np.linspace(-180, 180, num = 360)
@@ -340,7 +342,7 @@ class PlotAntennaPattern(object):
         if plot_type == "ELEMENT":
             gain = antenna.element.element_pattern(phi, theta)
         elif plot_type == "ARRAY":
-            antenna.add_beam(phi_escan, theta_tilt)
+            antenna.add_beam(phi_look, theta_look)
             gain = antenna.calculate_gain(phi_vec = phi,
                                           theta_vec = theta,
                                           beams_l = np.zeros_like(phi, dtype=int))
@@ -408,7 +410,7 @@ if __name__ == '__main__':
     figs_dir = "figs/"
 
     param = ParametersAntennaImt()
-    param.adjacent_antenna_model = "SINGLE_ELEMENT"
+    param.adjacent_antenna_model = "BEAMFORMING"
     param.bs_normalization = False
     param.ue_normalization = False
     param.bs_normalization_file = 'beamforming_normalization\\bs_indoor_norm.npz'
@@ -417,9 +419,9 @@ if __name__ == '__main__':
     param.ue_minimum_array_gain = -200
     
     param.bs_element_pattern = "M2101"
-    param.bs_element_max_g    = 5
-    param.bs_element_phi_3db  = 65
-    param.bs_element_theta_3db = 65
+    param.bs_element_max_g    = 5.5
+    param.bs_element_phi_3db  = 120
+    param.bs_element_theta_3db = 90
     param.bs_element_am       = 30
     param.bs_element_sla_v    = 30
     param.bs_n_rows           = 8
@@ -427,16 +429,16 @@ if __name__ == '__main__':
     param.bs_element_horiz_spacing = 0.5
     param.bs_element_vert_spacing = 0.5
     param.bs_multiplication_factor = 12
-    param.bs_downtilt = 0
+    param.bs_downtilt = 10
 
-    param.ue_element_pattern = "M2101"
-    param.ue_element_max_g    = 5
-    param.ue_element_phi_3db  = 90
-    param.ue_element_theta_3db = 90
+    param.ue_element_pattern = "FIXED"
+    param.ue_element_max_g    = -4
+    param.ue_element_phi_3db  = 360
+    param.ue_element_theta_3db = 180
     param.ue_element_am       = 25
     param.ue_element_sla_v    = 25
-    param.ue_n_rows           = 4
-    param.ue_n_columns        = 4
+    param.ue_n_rows           = 1
+    param.ue_n_columns        = 1
     param.ue_element_horiz_spacing = 0.5
     param.ue_element_vert_spacing = 0.5
     param.ue_multiplication_factor = 12

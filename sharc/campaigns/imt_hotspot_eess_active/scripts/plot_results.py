@@ -2,7 +2,7 @@ import os
 from sharc.plots.plot_cdf import all_plots
 
 # Define the base directory
-name = "imt_mss_ras_2600_MHz"
+name = "imt_hotspot_eess_active"
 
 # this should behave similarly to `sharc/plots/plot_cdf:13`
 # ideally the readable legend would be in the .ini metadata and all this code would be deleted
@@ -13,43 +13,27 @@ subdirs = [
     d
     for d in os.listdir(csv_folder)
     if os.path.isdir(os.path.join(csv_folder, d))
-    and d.startswith(f"output_{name}_")
+    and d.startswith(f"imt_")
 ]
 
 legends_mapper = [
     {
         # same as from .ini
         # the legend should probably also be in the metadata there instead of making... this
-        "output_dir_prefix": "output_imt_mss_ras_2600_MHz_30deg",
-        "legend": "30 deg (P619)",
+        "output_dir_prefix": "imt_dl_hotspot_eess_active_beam_large",
+        "legend": "Downlink beam large",
     },
     {
-        "output_dir_prefix": "output_imt_mss_ras_2600_MHz_45deg",
-        "legend": "45 deg (P619)",
+        "output_dir_prefix": "imt_dl_hotspot_eess_active_beam_small",
+        "legend": "Downlink beam small",
     },
     {
-        "output_dir_prefix": "output_imt_mss_ras_2600_MHz_60deg",
-        "legend": "60 deg (P619)",
+        "output_dir_prefix": "imt_ul_hotspot_eess_active_beam_large",
+        "legend": "Uplink beam large",
     },
     {
-        "output_dir_prefix": "output_imt_mss_ras_2600_MHz_90deg",
-        "legend": "90 deg (P619)",
-    },
-    {
-        "output_dir_prefix": "output_imt_mss_ras_2600_MHz_fspl_30deg",
-        "legend": "30 deg (fspl)",
-    },
-    {
-        "output_dir_prefix": "output_imt_mss_ras_2600_MHz_fspl_45deg",
-        "legend": "45 deg (fspl)",
-    },
-    {
-        "output_dir_prefix": "output_imt_mss_ras_2600_MHz_fspl_60deg",
-        "legend": "60 deg (fspl)",
-    },
-    {
-        "output_dir_prefix": "output_imt_mss_ras_2600_MHz_fspl_90deg",
-        "legend": "90 deg (fspl)",
+        "output_dir_prefix": "imt_ul_hotspot_eess_active_beam_small",
+        "legend": "Uplink beam small",
     },
 ]
 

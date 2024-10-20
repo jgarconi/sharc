@@ -262,7 +262,6 @@ class Simulation(ABC, Observable):
         # calculate coupling loss
         coupling_loss = np.squeeze(
             self.imt_system_path_loss - self.system_imt_antenna_gain - self.imt_system_antenna_gain) + additional_loss
-
         return coupling_loss
 
     def calculate_intra_imt_coupling_loss(self,

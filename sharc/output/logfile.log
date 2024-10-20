@@ -1752,3 +1752,1084 @@ FINISHED!
 Elapsed time: 00 h 00 min 02 seg
 Ready to run!
 
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_dl_hotspot_eess_active_beam_large.ini
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_ul_hotspot_eess_active_beam_small.ini
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_ul_hotspot_eess_active_beam_large.ini
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_dl_hotspot_eess_active_beam_small.ini
+
+IMT:
+	interfered with: False
+	direction: DOWNLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+
+IMT:
+	interfered with: False
+	direction: UPLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+
+IMT:
+	interfered with: False
+	direction: DOWNLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+
+IMT:
+	interfered with: False
+	direction: UPLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+Snapshot #10
+Snapshot #10
+FINISHED!
+Elapsed time: 00 h 00 min 32 seg
+FINISHED!
+Elapsed time: 00 h 00 min 32 seg
+Snapshot #10
+Snapshot #10
+FINISHED!
+Elapsed time: 00 h 00 min 36 seg
+FINISHED!
+Elapsed time: 00 h 00 min 36 seg
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_ul_hotspot_eess_active_beam_small.ini
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_dl_hotspot_eess_active_beam_large.ini
+
+IMT:
+	interfered with: False
+	direction: UPLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+
+IMT:
+	interfered with: False
+	direction: DOWNLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_ul_hotspot_eess_active_beam_large.ini
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_dl_hotspot_eess_active_beam_small.ini
+
+IMT:
+	interfered with: False
+	direction: UPLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+
+IMT:
+	interfered with: False
+	direction: DOWNLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_dl_hotspot_eess_active_beam_large.ini
+
+IMT:
+	interfered with: False
+	direction: DOWNLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_ul_hotspot_eess_active_beam_large.ini
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_ul_hotspot_eess_active_beam_small.ini
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_dl_hotspot_eess_active_beam_small.ini
+
+IMT:
+	interfered with: False
+	direction: UPLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+
+IMT:
+	interfered with: False
+	direction: UPLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+
+IMT:
+	interfered with: False
+	direction: DOWNLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_ul_hotspot_eess_active_beam_large.ini
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_dl_hotspot_eess_active_beam_large.ini
+
+IMT:
+	interfered with: False
+	direction: UPLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+
+IMT:
+	interfered with: False
+	direction: DOWNLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_dl_hotspot_eess_active_beam_small.ini
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_ul_hotspot_eess_active_beam_small.ini
+
+IMT:
+	interfered with: False
+	direction: DOWNLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+
+IMT:
+	interfered with: False
+	direction: UPLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+Snapshot #10
+Snapshot #10
+Snapshot #10
+Snapshot #10
+Snapshot #20
+Snapshot #20
+Snapshot #20
+Snapshot #20
+Snapshot #30
+Snapshot #30
+Snapshot #30
+Snapshot #30
+Snapshot #40
+Snapshot #40
+Snapshot #40
+Snapshot #40
+Snapshot #50
+Snapshot #50
+Snapshot #50
+Snapshot #50
+Snapshot #60
+Snapshot #60
+Snapshot #60
+Snapshot #60
+Snapshot #70
+Snapshot #70
+Snapshot #70
+Snapshot #70
+Snapshot #80
+Snapshot #80
+Snapshot #80
+Snapshot #80
+Snapshot #90
+Snapshot #90
+Snapshot #90
+Snapshot #90
+Snapshot #100
+Snapshot #100
+FINISHED!
+Elapsed time: 00 h 06 min 01 seg
+FINISHED!
+Elapsed time: 00 h 06 min 01 seg
+Snapshot #100
+FINISHED!
+Elapsed time: 00 h 06 min 10 seg
+Snapshot #100
+FINISHED!
+Elapsed time: 00 h 06 min 17 seg
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_dl_hotspot_eess_active_beam_small.ini
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_dl_hotspot_eess_active_beam_large.ini
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_ul_hotspot_eess_active_beam_large.ini
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_ul_hotspot_eess_active_beam_small.ini
+
+IMT:
+	interfered with: False
+	direction: DOWNLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+
+IMT:
+	interfered with: False
+	direction: DOWNLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+
+IMT:
+	interfered with: False
+	direction: UPLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+
+IMT:
+	interfered with: False
+	direction: UPLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+Snapshot #10
+Snapshot #10
+Snapshot #10
+Snapshot #10
+Snapshot #20
+Snapshot #20
+Snapshot #20
+Snapshot #20
+Snapshot #30
+Snapshot #30
+Snapshot #30
+Snapshot #30
+Snapshot #40
+Snapshot #40
+Snapshot #40
+Snapshot #40
+Snapshot #50
+Snapshot #50
+Snapshot #50
+Snapshot #50
+Snapshot #60
+Snapshot #60
+Snapshot #60
+Snapshot #70
+Snapshot #60
+Snapshot #70
+Snapshot #70
+Snapshot #80
+Snapshot #70
+Snapshot #80
+Snapshot #80
+Snapshot #90
+Snapshot #80
+Snapshot #90
+Snapshot #90
+Snapshot #100
+FINISHED!
+Elapsed time: 00 h 06 min 06 seg
+Snapshot #100
+Snapshot #90
+FINISHED!
+Elapsed time: 00 h 06 min 15 seg
+Snapshot #100
+FINISHED!
+Elapsed time: 00 h 06 min 27 seg
+Snapshot #100
+FINISHED!
+Elapsed time: 00 h 06 min 42 seg
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_dl_hotspot_eess_active_beam_large.ini
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_dl_hotspot_eess_active_beam_small.ini
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_ul_hotspot_eess_active_beam_small.ini
+
+IMT:
+	interfered with: False
+	direction: DOWNLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+
+IMT:
+	interfered with: False
+	direction: DOWNLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+
+IMT:
+	interfered with: False
+	direction: UPLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_ul_hotspot_eess_active_beam_large.ini
+
+IMT:
+	interfered with: False
+	direction: UPLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+Snapshot #10
+Snapshot #10
+Snapshot #10
+Snapshot #10
+Snapshot #20
+Snapshot #20
+Snapshot #20
+Snapshot #20
+Snapshot #30
+Snapshot #30
+Snapshot #30
+Snapshot #30
+Snapshot #40
+Snapshot #40
+Snapshot #40
+Snapshot #40
+Snapshot #50
+Snapshot #50
+Snapshot #50
+Snapshot #50
+Snapshot #60
+Snapshot #60
+Snapshot #60
+Snapshot #60
+Snapshot #70
+Snapshot #70
+Snapshot #70
+Snapshot #70
+Snapshot #80
+Snapshot #80
+Snapshot #80
+Snapshot #80
+Snapshot #90
+Snapshot #90
+Snapshot #90
+Snapshot #90
+Snapshot #100
+Snapshot #100
+FINISHED!
+Elapsed time: 00 h 05 min 58 seg
+FINISHED!
+Elapsed time: 00 h 06 min 01 seg
+Snapshot #100
+FINISHED!
+Elapsed time: 00 h 06 min 04 seg
+Snapshot #100
+FINISHED!
+Elapsed time: 00 h 06 min 08 seg
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_dl_hotspot_eess_active_beam_large.ini
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_ul_hotspot_eess_active_beam_large.ini
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_ul_hotspot_eess_active_beam_small.ini
+
+IMT:
+	interfered with: False
+	direction: DOWNLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_dl_hotspot_eess_active_beam_small.ini
+
+IMT:
+	interfered with: False
+	direction: UPLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+
+IMT:
+	interfered with: False
+	direction: UPLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+
+IMT:
+	interfered with: False
+	direction: DOWNLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+Snapshot #10
+Snapshot #10
+Snapshot #10
+Snapshot #10
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_dl_hotspot_eess_active_beam_small.ini
+
+IMT:
+	interfered with: False
+	direction: DOWNLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_dl_hotspot_eess_active_beam_large.ini
+
+IMT:
+	interfered with: False
+	direction: DOWNLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_ul_hotspot_eess_active_beam_small.ini
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_ul_hotspot_eess_active_beam_large.ini
+
+IMT:
+	interfered with: False
+	direction: UPLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+
+IMT:
+	interfered with: False
+	direction: UPLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_ul_hotspot_eess_active_beam_large.ini
+
+IMT:
+	interfered with: False
+	direction: UPLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_dl_hotspot_eess_active_beam_small.ini
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_ul_hotspot_eess_active_beam_small.ini
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_dl_hotspot_eess_active_beam_large.ini
+
+IMT:
+	interfered with: False
+	direction: DOWNLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+
+IMT:
+	interfered with: False
+	direction: UPLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+
+IMT:
+	interfered with: False
+	direction: DOWNLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_dl_hotspot_eess_active_beam_large.ini
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_dl_hotspot_eess_active_beam_small.ini
+
+IMT:
+	interfered with: False
+	direction: DOWNLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+
+IMT:
+	interfered with: False
+	direction: DOWNLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_ul_hotspot_eess_active_beam_large.ini
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_ul_hotspot_eess_active_beam_small.ini
+
+IMT:
+	interfered with: False
+	direction: UPLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+
+IMT:
+	interfered with: False
+	direction: UPLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+Snapshot #10
+Snapshot #10
+Snapshot #20
+Snapshot #20
+Snapshot #30
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_ul_hotspot_eess_active_beam_large.ini
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_dl_hotspot_eess_active_beam_small.ini
+
+IMT:
+	interfered with: False
+	direction: UPLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+
+IMT:
+	interfered with: False
+	direction: DOWNLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_dl_hotspot_eess_active_beam_large.ini
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_ul_hotspot_eess_active_beam_small.ini
+
+IMT:
+	interfered with: False
+	direction: DOWNLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+
+IMT:
+	interfered with: False
+	direction: UPLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+Snapshot #10
+Snapshot #10
+Snapshot #10
+Snapshot #10
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_dl_hotspot_eess_active_beam_small.ini
+
+IMT:
+	interfered with: False
+	direction: DOWNLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_dl_hotspot_eess_active_beam_large.ini
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_ul_hotspot_eess_active_beam_small.ini
+
+IMT:
+	interfered with: False
+	direction: DOWNLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+
+IMT:
+	interfered with: False
+	direction: UPLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+Loading file:
+/home/ju/Documents/Github/sharc/sharc/campaigns/imt_hotspot_eess_active/input/parameters_imt_ul_hotspot_eess_active_beam_large.ini
+
+IMT:
+	interfered with: False
+	direction: UPLINK
+	frequency: 10.000 GHz
+	bandwidth: 100 MHz
+	spurious emissions: -13 dBm/MHz
+	topology: HOTSPOT
+	path loss model: UMi
+EESS_PASSIVE:
+	frequency: 9.800 GHz
+	bandwidth: 1200 MHz
+	path loss model: P619
+	antenna pattern: ITU-R RS.2043
+
+Simulation is running...
+Snapshot #10
+Snapshot #10
+Snapshot #10
+Snapshot #10
+Snapshot #20
+Snapshot #20
+Snapshot #20
+Snapshot #20
+Snapshot #30
+Snapshot #30
+Snapshot #30
+Snapshot #30
+Snapshot #40
+Snapshot #40
+Snapshot #40
+Snapshot #40
+Snapshot #50
+Snapshot #50
+Snapshot #50
+Snapshot #50
+Snapshot #60
+Snapshot #60
+Snapshot #60
+Snapshot #60
+Snapshot #70
+Snapshot #70
+Snapshot #70
+Snapshot #70
+Snapshot #80
+Snapshot #80
+Snapshot #80
+Snapshot #80
+Snapshot #90
+Snapshot #90
+Snapshot #90
+Snapshot #90
+Snapshot #100
+FINISHED!
+Elapsed time: 00 h 05 min 55 seg
+Snapshot #100
+FINISHED!
+Elapsed time: 00 h 06 min 01 seg
+Snapshot #100
+Snapshot #100
+FINISHED!
+Elapsed time: 00 h 06 min 18 seg
+FINISHED!
+Elapsed time: 00 h 06 min 19 seg
