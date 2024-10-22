@@ -238,9 +238,9 @@ if __name__ == '__main__':
 
     sta_type = StationType.IMT_BS
     p_tx = 34.061799739838875
-    freq = 9000
+    freq = 10250
     band = 100
-    spurious_emissions_dbm_mhz = -30
+    spurious_emissions_dbm_mhz = -13
 
     # Create mask
     msk = SpectralMaskImt(sta_type,freq,band, spurious_emissions_dbm_mhz)
