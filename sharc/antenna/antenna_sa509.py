@@ -66,9 +66,14 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
     par = ParametersRas();
-    par.diameter = 1
+    par.diameter = 15
     par.antenna_efficiency = 1
-    par.frequency = 43000
+    par.frequency = 10650
+    par.bandwidth = 100
+    par.adjacent_ch_selectivity = 46
+    par.antenna_noise_temperature = 12
+    par.receiver_noise_temperature = 10
+    par.x = 50000
 
     antenna1 = AntennaSA509(par)
     par.diameter = 7
@@ -83,9 +88,9 @@ if __name__ == '__main__':
 
     fig = plt.figure(figsize=(8,7), facecolor='w', edgecolor='k')  # create a figure object
 
-    plt.semilogx(phi, gain1, "-b", label = "$f = 43$ $GHz,$ $D = 1$ $m$")
-    plt.semilogx(phi, gain7, "-r", label = "$f = 43$ $GHz,$ $D = 7$ $m$")
-    plt.semilogx(phi, gain10, "-k", label = "$f = 43$ $GHz,$ $D = 10$ $m$")
+    plt.semilogx(phi, gain1, "-b", label = "$f = 10650$ $MHz,$ $D = 15$ $m$")
+    #plt.semilogx(phi, gain7, "-r", label = "$f = 43$ $GHz,$ $D = 7$ $m$")
+    #plt.semilogx(phi, gain10, "-k", label = "$f = 43$ $GHz,$ $D = 10$ $m$")
 
     plt.title("ITU-R SA.509-3 antenna radiation pattern")
     plt.xlabel("Off-axis angle $\phi$ [deg]")

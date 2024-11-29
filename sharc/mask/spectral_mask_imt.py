@@ -153,6 +153,8 @@ class SpectralMaskImt(SpectralMask):
                 - Table 6.6.5.2.1-2   in ETSI TS 138 104 V16.6.0 (to choose spurious emission, not an impementation table)
         """
         # ITU-R SM.1539-1 Table 2
+        B_L = 0
+        B_U = 0
         if (freq_mhz > 0.009 and freq_mhz < 0.15):
             B_L = 0.00025
             B_U = 0.01
@@ -240,7 +242,7 @@ if __name__ == '__main__':
     p_tx = 34.061799739838875
     freq = 10250
     band = 100
-    spurious_emissions_dbm_mhz = -13
+    spurious_emissions_dbm_mhz = -30
 
     # Create mask
     msk = SpectralMaskImt(sta_type,freq,band, spurious_emissions_dbm_mhz)
