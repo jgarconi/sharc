@@ -313,7 +313,7 @@ class ReferenceAtmosphere:
         return [temperature, pressure, water_vapour_pressure, refractive_index, specific_attenuation]
 
     @staticmethod
-    def get_reference_atmosphere_p835(latitude, altitude=1000, season="summer"):
+    def get_reference_atmosphere_p835(latitude, altitude=1000, season="SUMMER"):
         """
         Returns reference atmosphere parameters based on ITU-R P835-5
 
@@ -321,7 +321,7 @@ class ReferenceAtmosphere:
          ----------
              latitude (float): latitude (degrees)
              altitude (float): altitude (m)
-             season (string): season of the year, "summer"/"winter"
+             season (string): season of the year, "SUMMER"/"WINTER"
 
          Returns
          -------
@@ -373,7 +373,7 @@ class ReferenceAtmosphere:
 
         elif latitude <= 45.:
             # mid-latitude
-            if season == "summer":
+            if season == "SUMMER":
                 if h_km < 13.:
                     temperature = 294.9838 - 5.2159 * h_km - .07109 * h_km ** 2
                 elif h_km < 17.:
@@ -413,7 +413,7 @@ class ReferenceAtmosphere:
                 else:
                     water_vapour_density = 0
 
-            elif season == "winter":
+            elif season == "WINTER":
                 if h_km < 13.:
                     temperature = 272.7241 - 3.6217 * h_km - .1759 * h_km ** 2
                 elif h_km < 33.:
@@ -457,7 +457,7 @@ class ReferenceAtmosphere:
                 raise ValueError(error_message)
         else:
             # high latitude (>45 deg)
-            if season == "summer":
+            if season == "SUMMER":
                 if h_km < 13.:
                     temperature = 286.8374 - 4.7805 * h_km - 0.1402 * h_km ** 2
                 elif h_km < 23.:
@@ -497,7 +497,7 @@ class ReferenceAtmosphere:
                 else:
                     water_vapour_density = 0
 
-            elif season == "winter":
+            elif season == "WINTER":
                 if h_km < 8.5:
                     temperature = (
                         257.4345 + 2.3474 * h_km - .15479 * h_km ** 2 +

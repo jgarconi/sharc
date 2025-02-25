@@ -316,7 +316,7 @@ single_space_station:
   #     Prediction procedure for the evaluation of interference between stations on
   #     the surface of the Earth at frequencies above about 0.1 GHz
   # NOTE: check this information
-  channel_model: P.619
+  channel_model: P619
   season: SUMMER
 
   geometry:

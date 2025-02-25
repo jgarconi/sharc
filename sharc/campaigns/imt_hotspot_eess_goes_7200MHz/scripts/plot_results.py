@@ -12,6 +12,7 @@ from sharc.antenna.antenna_beamforming_imt import AntennaBeamformingImt, PlotAnt
 
 campaign_base_dir = str((Path(__file__) / ".." / "..").resolve())
 dl_dir = os.path.join(campaign_base_dir, "output_dl")
+ul_dir = os.path.join(campaign_base_dir, "output_ul")
 
 post_processor = PostProcessor()
 
@@ -19,45 +20,15 @@ post_processor = PostProcessor()
 # This could easily come from a config file
 post_processor\
     .add_plot_legend_pattern(
-        dir_name_contains="_afr_1_cluster_dl",
-        legend="Hotspot DL 1 clusters AFR"
+        dir_name_contains="_eua_dl",
+        legend="Hotspot DL US"
     ).add_plot_legend_pattern(
-        dir_name_contains="_br_1_cluster_ul",
-        legend="Hotspot UL 1 clusters BR"
-    ).add_plot_legend_pattern(
-        dir_name_contains="_afr_7_cluster_dl",
-        legend="Hotspot DL 7 clusters AFR"
-    ).add_plot_legend_pattern(
-        dir_name_contains="_br_7_cluster_ul",
-        legend="Hotspot UL 7 clusters BR"
-    ).add_plot_legend_pattern(
-        dir_name_contains="_afr_1_cluster_ul",
-        legend="Hotspot UL 1 clusters AFR"
-    ).add_plot_legend_pattern(
-        dir_name_contains="_sa_1_cluster_dl",
-        legend="Hotspot DL 1 clusters SA"
-    ).add_plot_legend_pattern(
-        dir_name_contains="_afr_7_cluster_ul",
-        legend="Hotspot UL 7 clusters AFR"
-    ).add_plot_legend_pattern(
-        dir_name_contains="_sa_7_cluster_dl",
-        legend="Hotspot DL 7 clusters SA"
-    ).add_plot_legend_pattern(
-        dir_name_contains="_br_1_cluster_dl",
-        legend="Hotspot DL 1 clusters BR"
-    ).add_plot_legend_pattern(
-        dir_name_contains="_sa_1_cluster_ul",
-        legend="Hotspot UL 1 clusters SA"
-    ).add_plot_legend_pattern(
-        dir_name_contains="_br_7_cluster_dl",
-        legend="Hotspot DL 7 clusters BR"
-    ).add_plot_legend_pattern(
-        dir_name_contains="_sa_7_cluster_ul",
-        legend="Hotspot UL 7 clusters SA"
+        dir_name_contains="_eua_ul",
+        legend="Hotspot UL US"
     )
 
 attributes_to_plot = [
-    # "system_imt_antenna_gain",
+    "system_imt_antenna_gain",
     # "imt_system_path_loss",
     # "imt_system_antenna_gain",
     "system_dl_interf_power_per_mhz",
@@ -74,7 +45,7 @@ dl_results = Results.load_many_from_dir(
     filter_fn=filter_fn
 )
 ul_results = Results.load_many_from_dir(
-    os.path.join(campaign_base_dir, "output_ul"), only_latest=True,
+    ul_dir, only_latest=True,
     only_samples=attributes_to_plot,
     filter_fn=filter_fn
 )
@@ -85,7 +56,7 @@ all_results = [
     *ul_results
 ]
 
-# transforming dBm / MHz to dB / kHz
+# transforming dBm / MHz to dBW / kHz
 for result in all_results:
     result.system_dl_interf_power_per_mhz = SampleList(
       np.array(result.system_dl_interf_power_per_mhz) - 30 - 30
@@ -158,23 +129,20 @@ if system_ul_interf_power_plot and system_dl_interf_power_plot:
             raise Exception(f"Cannot aggregate {legend1} and {legend2}")
             # continue
             
-
-        n_bs_sim = 19*3*3
-        if "_7_" in legend1["dir_name_contains"]:
-            n_bs_sim = n_bs_sim * 7
+        # NOTE: 19 sites, 7 clusters, 3 BS/site
+        # TODO: Use the values extracted from input file
+        n_bs_sim = 19*7*3*3
+        # if "_7_" in legend1["dir_name_contains"]:
+        #     n_bs_sim = n_bs_sim * 7
 
         aggregated_results = PostProcessor.aggregate_results(
-            dl_samples=dl_r.system_dl_interf_power,
-            ul_samples=ul_r.system_ul_interf_power,
+            dl_samples=dl_r.system_dl_interf_power_per_mhz,
+            ul_samples=ul_r.system_ul_interf_power_per_mhz,
             ul_tdd_factor=0.25,
             n_bs_sim=n_bs_sim,
-            # n_bs_actual=19*3*3*7                                                                                                                           
-            # n_bs_actual=363300,                                                                                                                            
-            # n_bs_actual=1035900,                                                                                                                           
-            # n_bs_actual=723300,                                                                                                                            
-            # n_bs_actual=1364850,                                                                                                                           
-            n_bs_actual=4391550,                                                                                                                             
-            # n_bs_actual=1904850
+            # NOTE: ra1 = 0.05 rb1 = .01 densidade = 30 BS/km²
+            # NOTE: 9867000 * 30 * .05 * .01                                                                                    
+            n_bs_actual=148005,                                                                                                                             
         )
         x, y = PostProcessor.cdf_from(aggregated_results)
 

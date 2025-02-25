@@ -103,7 +103,7 @@ class ResultsStatistics:
         return stats_found[0]
 
     def __str__(self):
-        return f"[{self.results_output_dir}]\n{'\n'.join(list(map(str, self.fields_statistics)))}"
+        return f"[{self.results_output_dir}]\n" + "\n".join(map(str, self.fields_statistics))
 
 
 @dataclass
