@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from sharc.parameters.parameters_p619 import ParametersP619
 from sharc.parameters.parameters_space_station import ParametersSpaceStation
 
 # The default values come from Report ITU-R SA.2488-0, table 19 (the only earth-to-space MetSat entry)
@@ -61,9 +62,7 @@ class ParametersMetSatSS(ParametersSpaceStation):
         super().load_parameters_from_file(config_file)
         print(self.antenna_pattern)
         if self.antenna_pattern not in ["ITU-R S.672"]:
-            raise ValueError(f"Invalid antenna_pattern: {
-                             self.antenna_pattern
-            }")
+            raise ValueError(f"Invalid antenna_pattern: {self.antenna_pattern}")
 
         # Check channel model
         if self.channel_model not in ["FSPL", "P619"]:

@@ -103,7 +103,7 @@ class ResultsStatistics:
         return stats_found[0]
 
     def __str__(self):
-        return f"[{self.results_output_dir}]\n{'\n'.join(list(map(str, self.fields_statistics)))}"
+        return f"[{self.results_output_dir}]\n" + '\n'.join(list(map(str, self.fields_statistics)))
 
 
 @dataclass
@@ -441,12 +441,16 @@ class PostProcessor:
     @staticmethod
     def aggregate_results(
         *,
-        dl_samples: list[float],
-        ul_samples: list[float],
+        sm_dl_samples: list[float],
+        sm_ul_samples: list[float],
+        lg_dl_samples: list[float],
+        lg_ul_samples: list[float],
         ul_tdd_factor: float,
-        n_bs_sim: int,
-        n_bs_actual: int,
-        random_number_gen=np.random.RandomState(31),
+        sm_n_bs_sim: int,
+        sm_n_bs_actual: int,
+        lg_n_bs_sim: int,
+        lg_n_bs_actual: int,
+        random_number_gen=np.random.RandomState(101),
     ):
         """
         The method was adapted from document 'TG51_201805_E07_FSS_Uplink_ study 48GHz_GSMA_v1.5.pdf',
@@ -458,7 +462,7 @@ class PostProcessor:
                 Samples that should be aggregated.
             ul_tdd_factor: float
                 The tdd ratio that uplink is activated for.
-            n_bs_sim: int
+            sm_n_bs_sim: int
                 Number of simulated base stations.
                 Should probably be 7 * 19 * 3 * 3 or 1 * 19 * 3 * 3
             n_bs_actual: int
@@ -473,41 +477,58 @@ class PostProcessor:
                 + f"ul_tdd_factor must be in interval [0, 1], but is {ul_tdd_factor}"
             )
 
-        segment_factor = round(n_bs_actual / n_bs_sim)
+        sm_segment_factor = round(sm_n_bs_actual / sm_n_bs_sim)
+        lg_segment_factor = round(lg_n_bs_actual / lg_n_bs_sim)
 
         dl_tdd_factor = 1 - ul_tdd_factor
 
         if ul_tdd_factor == 0:
-            n_aggregate = len(dl_samples)
+            n_aggregate = min(len(sm_dl_samples), len(lg_dl_samples))
         elif dl_tdd_factor == 0:
-            n_aggregate = len(ul_samples)
+            n_aggregate = min(len(sm_ul_samples), len(lg_ul_samples))
         else:
-            n_aggregate = min(len(ul_samples), len(dl_samples))
+            n_aggregate = min(len(sm_ul_samples), len(sm_dl_samples), len(lg_ul_samples), len(lg_dl_samples))
 
         aggregate_samples = np.empty(n_aggregate)
 
         for i in range(n_aggregate):
             # choose S random samples
-            ul_random_indexes = np.floor(
-                random_number_gen.random(size=segment_factor)
-                * len(ul_samples)
+            sm_ul_random_indexes = np.floor(
+                random_number_gen.random(size=sm_segment_factor)
+                * len(sm_ul_samples)
             )
-            dl_random_indexes = np.floor(
-                random_number_gen.random(size=segment_factor)
-                * len(dl_samples)
+            sm_dl_random_indexes = np.floor(
+                random_number_gen.random(size=sm_segment_factor)
+                * len(sm_dl_samples)
+            )
+            lg_ul_random_indexes = np.floor(
+                random_number_gen.random(size=lg_segment_factor)
+                * len(lg_ul_samples)
+            )
+            lg_dl_random_indexes = np.floor(
+                random_number_gen.random(size=lg_segment_factor)
+                * len(lg_dl_samples)
             )
             aggregate_samples[i] = 0
 
             if ul_tdd_factor:
-                for j in ul_random_indexes:  # random samples
+                for j in sm_ul_random_indexes:  # random samples
                     aggregate_samples[i] += (
-                        np.power(10, ul_samples[int(j)] / 10) * ul_tdd_factor
+                        np.power(10, sm_ul_samples[int(j)] / 10) * ul_tdd_factor
+                    )
+                for k in lg_ul_random_indexes:  # random samples
+                    aggregate_samples[i] += (
+                        np.power(10, lg_ul_samples[int(k)] / 10) * ul_tdd_factor
                     )
 
             if dl_tdd_factor:
-                for j in dl_random_indexes:  # random samples
+                for j in sm_dl_random_indexes:  # random samples
                     aggregate_samples[i] += (
-                        np.power(10, dl_samples[int(j)] / 10) * dl_tdd_factor
+                        np.power(10, sm_dl_samples[int(j)] / 10) * dl_tdd_factor
+                    )
+                for k in lg_dl_random_indexes:  # random samples
+                    aggregate_samples[i] += (
+                        np.power(10, lg_dl_samples[int(k)] / 10) * dl_tdd_factor
                     )
 
             # convert back to dB or dBm (as was previously)
@@ -569,7 +590,7 @@ class PostProcessor:
                 height=height
             )
 
-            plot.write_image(os.path.join(dir, f"{plot.layout.title.text}.jpg"))
+            plot.write_image(os.path.join(dir, f"{plot.layout.title.text}.jpg"), engine="kaleido")
 
             plot.update_layout(
                 autosize=prev_autosize,

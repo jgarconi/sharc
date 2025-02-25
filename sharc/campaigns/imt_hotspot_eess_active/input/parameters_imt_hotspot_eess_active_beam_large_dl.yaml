@@ -55,7 +55,7 @@ imt:
             # Inter-site distance in macrocell network topology [m]
             #intersite_distance = 1740
             #intersite_distance = 665
-            intersite_distance: 660
+            intersite_distance: 418000
     ###########################################################################
     # Minimum 2D separation distance from BS to UE [m]
     # NOTE: MODIFIED

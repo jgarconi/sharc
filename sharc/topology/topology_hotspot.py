@@ -261,19 +261,19 @@ class TopologyHotspot(Topology):
 
 if __name__ == '__main__':
     param = ParametersHotspot()
-    param.num_hotspots_per_cell = 2
+    param.num_hotspots_per_cell = 3
 
-    param.max_dist_hotspot_ue = 60
+    param.max_dist_hotspot_ue = 310
     param.min_dist_bs_hotspot = 0
 
-    intersite_distance = 339.81
+    intersite_distance = 418000
 
-    num_clusters = 1
+    num_clusters = 7
     topology = TopologyHotspot(param, intersite_distance, num_clusters)
     topology.calculate_coordinates()
 
     fig = plt.figure(
-        figsize=(8, 8), facecolor='w',
+        figsize=(10, 10), facecolor='w',
         edgecolor='k',
     )  # create a figure object
     ax = fig.add_subplot(1, 1, 1)  # create an axes object in the figure
@@ -288,6 +288,6 @@ if __name__ == '__main__':
     plt.tight_layout()
 
     axes = plt.gca()
-    axes.set_xlim([-1500, 1000])
+    #axes.set_xlim([-1500, 1000])
 
     plt.show()
