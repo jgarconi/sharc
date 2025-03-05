@@ -38,7 +38,7 @@ imt:
     interfered_with: FALSE
     # IMT center frequency [MHz]
     # NOTE: crentered in satellite frequency 
-    frequency: 7216
+    frequency: 7216.6
     # IMT bandwidth [MHz]
     # NOTE: From Annex 4.2 to Doc 5D/413-E, Table 4
     bandwidth: 100

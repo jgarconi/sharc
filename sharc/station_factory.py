@@ -226,11 +226,11 @@ class StationFactory(object):
                 if param.ue.distribution_type.upper() == "CELL":
                     central_cell = True
 
-            if not (type(topology) is TopologyMacrocell):
-                sys.stderr.write(
-                    "ERROR\nUniform UE distribution is currently supported only with Macrocell topology",
-                )
-                sys.exit(1)
+            # if not (type(topology) is TopologyMacrocell):
+            #     sys.stderr.write(
+            #         "ERROR\nUniform UE distribution is currently supported only with Macrocell topology",
+            #     )
+            #     sys.exit(1)
 
             [ue_x, ue_y, theta, distance] = StationFactory.get_random_position(
                 num_ue, topology, random_number_gen,

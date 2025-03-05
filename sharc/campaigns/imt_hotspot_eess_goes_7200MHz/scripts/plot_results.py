@@ -29,8 +29,8 @@ post_processor\
 
 attributes_to_plot = [
     "system_imt_antenna_gain",
-    # "imt_system_path_loss",
-    # "imt_system_antenna_gain",
+    "imt_system_path_loss",
+    "imt_system_antenna_gain",
     "system_dl_interf_power_per_mhz",
     "system_ul_interf_power_per_mhz",
 ]
@@ -56,7 +56,7 @@ all_results = [
     *ul_results
 ]
 
-# transforming dBm / MHz to dBW / kHz
+# NOTE: dBm to dBW (-30) and MHz to kHz (-30)
 for result in all_results:
     result.system_dl_interf_power_per_mhz = SampleList(
       np.array(result.system_dl_interf_power_per_mhz) - 30 - 30
@@ -116,6 +116,25 @@ if system_ul_interf_power_plot and system_dl_interf_power_plot:
         legend_title="Labels",
         meta={"plot_type": "cdf"},
     )
+    
+    aggregated_ccdf_plot = go.Figure()
+    cutoff_percentage = 0.001
+    next_tick = 1
+    ticks_at = []
+    while next_tick > cutoff_percentage:
+        ticks_at.append(next_tick)
+        next_tick /= 10
+    ticks_at.append(cutoff_percentage)
+    ticks_at.reverse()
+    aggregated_ccdf_plot.update_layout(
+        title=f'CCDF Plot for aggregated Spectral Power Density from Interference',
+        xaxis_title="Interference (dBW/kHz)",
+        yaxis_title="CCDF",
+        yaxis=dict(tickmode="array", tickvals=ticks_at, type="log", range=[np.log10(cutoff_percentage), 0]),
+        xaxis=dict(tickmode="linear", dtick=5),
+        legend_title="Labels",
+        meta={"plot_type": "ccdf"},
+    )
 
     for dl_r in dl_results:
         legend1 = post_processor.get_results_possible_legends(dl_r)[0]
@@ -129,26 +148,57 @@ if system_ul_interf_power_plot and system_dl_interf_power_plot:
             raise Exception(f"Cannot aggregate {legend1} and {legend2}")
             # continue
             
-        # NOTE: 19 sites, 7 clusters, 3 BS/site
-        # TODO: Use the values extracted from input file
         n_bs_sim = 19*7*3*3
-        # if "_7_" in legend1["dir_name_contains"]:
-        #     n_bs_sim = n_bs_sim * 7
 
-        aggregated_results = PostProcessor.aggregate_results(
-            dl_samples=dl_r.system_dl_interf_power_per_mhz,
-            ul_samples=ul_r.system_ul_interf_power_per_mhz,
-            ul_tdd_factor=0.25,
-            n_bs_sim=n_bs_sim,
-            # NOTE: ra1 = 0.05 rb1 = .01 densidade = 30 BS/km²
-            # NOTE: 9867000 * 30 * .05 * .01                                                                                    
-            n_bs_actual=148005,                                                                                                                             
-        )
-        x, y = PostProcessor.cdf_from(aggregated_results)
+        rb = np.array([.01, .03])  # rb1, rb2
+        ra_urban = np.array([.05, 0.1])  # ra1, ra2 urbano
+        ra_suburban = np.array([0, 0])  # ra1, ra2 suburbano
+        area = 9867000  # US area (km²)
 
-        aggregated_plot.add_trace(
-            go.Scatter(x=x, y=y, mode='lines', name=f'{legend1["legend"]}',),
-        )
+        ds_urb = 30
+        ds_sub = 2.4
+
+        # Lista para armazenar os resultados
+        aggregated_results_list = []
+
+        # Loops para todas as combinações de rb com ra_urban e ra_suburban
+        for i in range(len(rb)):  
+            rb_i = rb[i]
+            ra_u = ra_urban[i]
+            ra_s = ra_suburban[i]
+
+            # Cálculo do número real de estações base macro
+            n_bs_actual = area * rb_i * ((ds_urb * ra_u) + (ds_sub * ra_s))
+
+            # Chamando a função aggregate_results
+            aggregated_results = PostProcessor.aggregate_results(
+                dl_samples=dl_r.system_dl_interf_power_per_mhz,
+                ul_samples=ul_r.system_ul_interf_power_per_mhz,
+                ul_tdd_factor=0.25,
+                n_bs_sim=n_bs_sim,
+                n_bs_actual=n_bs_actual,  # Valor calculado dinamicamente
+            )
+
+            # Armazena cada resultado
+            aggregated_results_list.append({
+                "rb": rb_i,
+                "ra_urban": ra_u,
+                "ra_suburban": ra_s,
+                "n_bs_actual": n_bs_actual,
+                "aggregated_results": aggregated_results
+            })
+
+        # Agora adicionamos os dois conjuntos de resultados ao gráfico
+        for result in aggregated_results_list:
+            x, y = PostProcessor.cdf_from(result["aggregated_results"])
+            aggregated_plot.add_trace(
+                go.Scatter(x=x, y=y, mode='lines', name=f'Aggregated CDF rb={result["rb"]}',),
+            )
+
+            x, y = PostProcessor.ccdf_from(result["aggregated_results"])
+            aggregated_ccdf_plot.add_trace(
+                go.Scatter(x=x, y=y, mode='lines', name=f'Aggregated CCDF rb={result["rb"]}',),
+            )
 
     # Add a protection criteria line:
     # dB to dBm (+ 30)
@@ -160,77 +210,20 @@ if system_ul_interf_power_plot and system_dl_interf_power_plot:
         name="1% criteria"
     )
 
-# i = 0
+    aggregated_ccdf_plot.add_vline(
+        interf_protection_criteria, line_dash="dash",
+        name="1% criteria"
+    )
 
-# for result in all_results:
-#     if "_10000m_" not in result.output_directory:
-#         continue
+plots = [*post_processor.plots, aggregated_plot, aggregated_ccdf_plot]
+# Plot every plot:
+for plot in plots:
+    plot.show()
 
-#     params_file = glob.glob(result.output_directory + "/*.yaml")[0]
-#     params = Parameters()
-#     params.set_file_name(params_file)
-#     params.read_params()
-
-#     # TODO: use antenna factory here if it ever exists
-#     legend = post_processor.get_results_possible_legends(result)[0]
-#     if params.single_earth_station.antenna.pattern == "ITU-R S.465":
-#         antenna = AntennaS465(params.single_earth_station.antenna.itu_r_s_465)
-#         PostProcessor.generate_antenna_radiation_pattern_plot(antenna, antenna_legends[i]).show()
-#     if i == 0:
-#         antenna_bs = AntennaBeamformingImt(
-#             params.imt.bs.antenna.get_antenna_parameters(),
-#             0,
-#             0,
-#             # -params.imt.bs.antenna.downtilt
-#         )
-#         antenna_ue = AntennaBeamformingImt(
-#             params.imt.ue.antenna.get_antenna_parameters(),
-#             0,
-#             0
-#         )
-
-#     i += 1
-
-
-# Show a single plot:
-
-PostProcessor.save_plots(
-    os.path.join(campaign_base_dir, "output", "figs"),
-    [*post_processor.plots, aggregated_plot],
-)
-
-# if aggregated_plot:
-#     aggregated_plot.show()
-
+# Save plots
+# PostProcessor.save_plots(
+#     os.path.join(campaign_base_dir, "output", "figs"),
+#     plots,
+# )
 
 plot_antenna_imt = PlotAntennaPattern("")
-
-# Plot BS TX radiation patterns
-# f = plot_antenna_imt.plot_element_pattern(antenna_bs, "BS", "ELEMENT")
-# # f.savefig(figs_dir + "BS_element.pdf", bbox_inches='tight')
-# f = plot_antenna_imt.plot_element_pattern(antenna_bs, "TX", "ARRAY")
-# # f.savefig(figs_dir + "BS_array.pdf", bbox_inches='tight')
-
-# # Plot UE TX radiation patterns
-# plot_antenna_imt.plot_element_pattern(antenna_ue, "UE", "ELEMENT")
-# plot_antenna_imt.plot_element_pattern(antenna_ue, "UE", "ARRAY")
-
-# Plot every plot:
-# for plot in plots:
-#     plot.show()
-
-# full_results = ""
-
-# for result in all_results:
-#     # This generates the mean, median, variance, etc
-#     stats = PostProcessor.generate_statistics(
-#         result=result
-#     ).write_to_results_dir()
-
-#     full_results += str(stats) + "\n"
-#     # # do whatever you want here:
-#     # if "fspl_45deg" in stats.results_output_dir:
-#     #     get some stat and do something
-
-# with open(dl_dir + "/stats.txt", "w") as f:
-#     f.write(full_results)
