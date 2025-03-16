@@ -216,12 +216,12 @@ class PostProcessor:
             "x_label": "Interference Power [dBm/BMHz]",
         },
         "system_ul_interf_power_per_mhz": {
-            "title": "[SYS] system interference power per MHz from IMT UL",
-            "x_label": "Interference Power [dBm/MHz]",
+            "title": "[SYS] system interference power per kHz from IMT UL",
+            "x_label": "Interference Power [dBW/kHz]",
         },
         "system_dl_interf_power_per_mhz": {
-            "title": "[SYS] system interference power per MHz from IMT DL",
-            "x_label": "Interference Power [dBm/MHz]",
+            "title": "[SYS] system interference power per kHz from IMT DL",
+            "x_label": "Interference Power [dBW/kHz]",
         },
         "system_inr": {
             "title": "[SYS] system INR",
@@ -243,9 +243,17 @@ class PostProcessor:
     }
 
     plot_legend_patterns: list = field(default_factory=list)
+    legends_generator = None
 
     plots: list[go.Figure] = field(default_factory=list)
     results: list[Results] = field(default_factory=list)
+
+    def add_plot_legend_generator(
+        self, generator
+    ) -> "PostProcessor":
+        if self.legends_generator is not None:
+            raise ValueError("Can only have one legends generator at a time")
+        self.legends_generator = generator
 
     def add_plot_legend_pattern(
         self, *, dir_name_contains: str, legend: str
@@ -258,16 +266,23 @@ class PostProcessor:
         return self
 
     def get_results_possible_legends(self, result: Results) -> list[dict]:
-        return list(
+        possible = list(
             filter(
                 lambda pl: pl["dir_name_contains"]
                 in os.path.basename(result.output_directory),
                 self.plot_legend_patterns,
             )
         )
+
+        if len(possible) == 0 and self.legends_generator is not None:
+            return [
+                {"legend": self.legends_generator(os.path.basename(result.output_directory))}
+            ]
+
+        return possible
     
     def generate_cdf_plots_from_results(
-        self, results: list[Results], *, n_bins=200
+        self, results: list[Results], *, n_bins=200, cutoff_percentage=0.01
     ) -> list[go.Figure]:
         figs: dict[str, list[go.Figure]] = {}
 
@@ -275,11 +290,19 @@ class PostProcessor:
             possible_legends_mapping = self.get_results_possible_legends(res)
 
             if len(possible_legends_mapping):
-                legend = possible_legends_mapping[0]["legend"]
+                legend_str = possible_legends_mapping[0]["legend"]
             else:
-                legend = res.output_directory
+                legend_str = res.output_directory
 
             attr_names = res.get_relevant_attributes()
+
+            next_tick = 1
+            ticks_at = []
+            while next_tick > cutoff_percentage:
+                ticks_at.append(next_tick)
+                next_tick /= 10
+            ticks_at.append(cutoff_percentage)
+            ticks_at.reverse()
 
             for attr_name in attr_names:
                 attr_val = getattr(res, attr_name)
@@ -300,11 +323,12 @@ class PostProcessor:
                     figs[attr_name] = go.Figure()
                     figs[attr_name].update_layout(
                         title=f'CDF Plot for {attr_plot_info["title"]}',
+                        title_font_size=26,
                         xaxis_title=attr_plot_info["x_label"],
-                        yaxis_title="CDF",
-                        yaxis=dict(tickmode="array", tickvals=[0, 0.25, 0.5, 0.75, 1]),
-                        xaxis=dict(tickmode="linear", dtick=5),
-                        legend_title="Labels",
+                        yaxis_title="$\\text{P } (X < x)$",
+                        yaxis=dict(tickmode="array", title_font_size=18,tickfont=dict(size=18), tickvals=ticks_at, type="log", range=[np.log10(cutoff_percentage- cutoff_percentage/2), 0]),
+                        xaxis=dict(tickmode="linear", title_font_size=18,tickfont=dict(size=18), dtick=5),
+                        legend=dict( font=dict(size=18)),
                         meta={"related_results_attribute": attr_name, "plot_type": "cdf"},
                     )
 
@@ -318,9 +342,18 @@ class PostProcessor:
                         x=x,
                         y=y,
                         mode="lines",
-                        name=f"{legend}",
+                        name=f"{legend_str}"
                     ),
                 )
+
+                fig.add_hline(
+                    cutoff_percentage, line_dash="dash",
+                    name="limite inferior"
+                )
+                fig.add_hline(
+                    cutoff_percentage, line_dash="dash",
+                    name="limite inferior"
+                )  
 
         return figs.values()
 
@@ -337,9 +370,9 @@ class PostProcessor:
             possible_legends_mapping = self.get_results_possible_legends(res)
 
             if len(possible_legends_mapping):
-                legend = possible_legends_mapping[0]["legend"]
+                legend_str = possible_legends_mapping[0]["legend"]
             else:
-                legend = res.output_directory
+                legend_str = res.output_directory
 
             attr_names = res.get_relevant_attributes()
 
@@ -370,11 +403,12 @@ class PostProcessor:
                     figs[attr_name] = go.Figure()
                     figs[attr_name].update_layout(
                         title=f'CCDF Plot for {attr_plot_info["title"]}',
+                        title_font_size=26,
                         xaxis_title=attr_plot_info["x_label"],
-                        yaxis_title="$\\text{P } I > X$",
-                        yaxis=dict(tickmode="array", tickvals=ticks_at, type="log", range=[np.log10(cutoff_percentage), 0]),
-                        xaxis=dict(tickmode="linear", dtick=5),
-                        legend_title="Labels",
+                        yaxis_title="$\\text{P } (X > x)$",
+                        yaxis=dict(tickmode="array", tickvals=ticks_at, title_font_size=18,tickfont=dict(size=18),type="log", range=[np.log10(cutoff_percentage- cutoff_percentage/2), 0]),
+                        xaxis=dict(tickmode="linear", title_font_size=18,tickfont=dict(size=18), dtick=5),
+                        legend=dict( font=dict(size=18)),
                         meta={"related_results_attribute": attr_name, "plot_type": "ccdf"},
                     )
 
@@ -388,9 +422,18 @@ class PostProcessor:
                         x=x,
                         y=y,
                         mode="lines",
-                        name=f"{legend}",
+                        name=f"{legend_str}"
                     ),
                 )
+
+                fig.add_hline(
+                    cutoff_percentage, line_dash="dash",
+                    name="limite inferior"
+                )
+                fig.add_hline(
+                    cutoff_percentage, line_dash="dash",
+                    name="limite inferior"
+                )       
 
         return figs.values()
 
@@ -446,6 +489,7 @@ class PostProcessor:
         ul_tdd_factor: float,
         n_bs_sim: int,
         n_bs_actual: int,
+        n_drops: int,
         random_number_gen=np.random.RandomState(31),
     ):
         """
@@ -463,6 +507,8 @@ class PostProcessor:
                 Should probably be 7 * 19 * 3 * 3 or 1 * 19 * 3 * 3
             n_bs_actual: int
                 The number of base stations the study wants to have conclusions for.
+            n_drops: int
+                The number of samples to be collected in this second Monte Carlo summation
             random_number_gen: np.random.RandomState
                 Since this methods uses another montecarlo to aggregate results,
                 it needs a random number generator
@@ -473,9 +519,7 @@ class PostProcessor:
                 + f"ul_tdd_factor must be in interval [0, 1], but is {ul_tdd_factor}"
             )
 
-        # % Define os fatores de segmento
-        # SF_LG = round(4*204248/(7*19*3*1));
-        # SF_SM = round(4*105/(7*19*3*1));
+        # % Define segment factor
         segment_factor = round(n_bs_actual / n_bs_sim)
 
         dl_tdd_factor = 1 - ul_tdd_factor
@@ -485,17 +529,14 @@ class PostProcessor:
         elif dl_tdd_factor == 0:
             n_aggregate = len(ul_samples)
         else:
-            n_aggregate = min(len(ul_samples), len(dl_samples))
+            #n_aggregate = min(len(ul_samples), len(dl_samples))
+            # Updating the number of samples to be collected
+            n_aggregate = n_drops
 
         aggregate_samples = np.empty(n_aggregate)
 
         for i in range(n_aggregate):
-            # choose S random samples
-            # % Define os índices para o Monte Carlo
-            # Ind_DL_LG = round(rand(N,floor(SF_LG))*(N-1))+1;
-            # Ind_UL_LG = round(rand(N,floor(SF_LG))*(N-1))+1;
-            # Ind_DL_SM = round(rand(N,floor(SF_SM))*(N-1))+1;
-            # Ind_UL_SM = round(rand(N,floor(SF_SM))*(N-1))+1; 
+            # Define Monte Carlo metrics for summation
             ul_random_indexes = np.floor(
                 random_number_gen.random(size=segment_factor)
                 * len(ul_samples)
@@ -509,14 +550,14 @@ class PostProcessor:
             if ul_tdd_factor:
                 for j in ul_random_indexes:  # random samples
                     aggregate_samples[i] += (
-                        # % Define as variáveis de INR (linear)
+                        # Define INR variables (linear)
                         np.power(10, ul_samples[int(j)] / 10) * ul_tdd_factor
                     )
 
             if dl_tdd_factor:
                 for j in dl_random_indexes:  # random samples
                     aggregate_samples[i] += (
-                        # % Define as variáveis de INR (linear)
+                        # Define INR variables (linear)
                         np.power(10, dl_samples[int(j)] / 10) * dl_tdd_factor
                     )
 
@@ -556,8 +597,8 @@ class PostProcessor:
         dir: str,
         plots: list[go.Figure],
         *,
-        width=1200,
-        height=800
+        width: int,
+        height: int
     ) -> None:
         """
         dir: A directory path on which to save the plot files
