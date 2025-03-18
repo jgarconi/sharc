@@ -187,6 +187,7 @@ if system_ul_interf_power_plot and system_dl_interf_power_plot:
     # if None in [dl_sub_r, ul_sub_r, ul_urb_r]:
     #     raise Exception(f"Cannot aggregate {legend1} and {legend2}")
 
+    # TODO: passar como parâmetro
     n_bs_sim = 19 * 3 * 3 * 7
 
     rb = np.array([.01, .03])  # rb1, rb2
