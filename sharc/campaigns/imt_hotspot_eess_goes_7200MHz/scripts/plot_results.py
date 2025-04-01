@@ -189,15 +189,15 @@ if system_ul_interf_power_plot and system_dl_interf_power_plot:
 
     n_bs_sim = 19 * 3 * 3 * 7
 
+    # NOTE: From Table 13 Annex 4.15 for micro cells
+    ra_urban = np.array([.05, .1])  # ra1, ra2 urbano micro
     rb = np.array([.01, .03])  # rb1, rb2
-    ra_urban = np.array([.1, 0.45])  # ra1, ra2 urbano
-    ra_suburban = np.array([0.05, 0.2])  # ra1, ra2 suburbano
     
     # area = 9867000  # US area (km²)
     area = 9867000
 
-    ds_urb = 10
-    ds_sub = 2.4
+    ds_urb = 30
+    # ds_sub = 2.4
 
     for i in range(2):
         # Cálculo do número real de estações base macro
@@ -327,20 +327,20 @@ if system_ul_interf_power_plot and system_dl_interf_power_plot:
     )
     #Linha horizontal no limite inferior
 
-    aggregated_plot.add_hline(
-        cutoff_percentage, line_dash="dash",
-        name="limite inferior"
-    )
-    aggregated_ccdf_plot.add_hline(
-        cutoff_percentage, line_dash="dash",
-        name="limite inferior"
-    )       
+    # aggregated_plot.add_hline(
+    #     cutoff_percentage, line_dash="dash",
+    #     name="limite inferior"
+    # )
+    # aggregated_ccdf_plot.add_hline(
+    #     cutoff_percentage, line_dash="dash",
+    #     name="limite inferior"
+    # )       
             
     
 plots = [*post_processor.plots, aggregated_plot, aggregated_ccdf_plot]
 
 PostProcessor.save_plots(
-    os.path.join(campaign_base_dir, "output", "figs3"),
+    os.path.join(campaign_base_dir, "output", "figuras"),
     plots,
     width = 1200,
     height= 800

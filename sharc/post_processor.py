@@ -346,14 +346,14 @@ class PostProcessor:
                     ),
                 )
 
-                fig.add_hline(
-                    cutoff_percentage, line_dash="dash",
-                    name="limite inferior"
-                )
-                fig.add_hline(
-                    cutoff_percentage, line_dash="dash",
-                    name="limite inferior"
-                )  
+                # fig.add_hline(
+                #     cutoff_percentage, line_dash="dash",
+                #     name="limite inferior"
+                # )
+                # fig.add_hline(
+                #     cutoff_percentage, line_dash="dash",
+                #     name="limite inferior"
+                # )  
 
         return figs.values()
 
@@ -426,14 +426,14 @@ class PostProcessor:
                     ),
                 )
 
-                fig.add_hline(
-                    cutoff_percentage, line_dash="dash",
-                    name="limite inferior"
-                )
-                fig.add_hline(
-                    cutoff_percentage, line_dash="dash",
-                    name="limite inferior"
-                )       
+                # fig.add_hline(
+                #     cutoff_percentage, line_dash="dash",
+                #     name="limite inferior"
+                # )
+                # fig.add_hline(
+                #     cutoff_percentage, line_dash="dash",
+                #     name="limite inferior"
+                # )       
 
         return figs.values()
 

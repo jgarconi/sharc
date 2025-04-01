@@ -5,7 +5,7 @@ from sharc.post_processor import PostProcessor
 import plotly.graph_objects as go
 from sharc.parameters.parameters import Parameters
 
-import glob
+import re
 import numpy as np
 from sharc.antenna.antenna_s465 import AntennaS465
 from sharc.antenna.antenna_beamforming_imt import AntennaBeamformingImt, PlotAntennaPattern
@@ -16,10 +16,6 @@ ul_dir = os.path.join(campaign_base_dir, "output_ul")
 
 post_processor = PostProcessor()
 
-# Add a legend to results in folder that match the pattern
-# This could easily come from a config file
-import re
-
 def legend_gen(dir_name):
     #print(dir_name)
     link = re.search("_(dl|ul)", dir_name)
@@ -28,13 +24,7 @@ def legend_gen(dir_name):
     else:
         return "None"
     
-    t = re.search("_((sub){0,1}urban)", dir_name)
-    if t is not None:
-        t = t.group(1)
-    else:
-        return "None"
-    
-    return f"{link.upper()} {t.capitalize()} "
+    return f"{link.upper()} "
 
 post_processor.add_plot_legend_generator(legend_gen)
 
@@ -42,56 +32,34 @@ attributes_to_plot = [
     "system_imt_antenna_gain",
     "imt_system_path_loss",
     "imt_system_antenna_gain",
+    "imt_dl_tx_power",
+    "imt_dl_tx_power_density",
+    "imt_ul_inr",
+    "imt_dl_inr",
     "system_dl_interf_power_per_mhz",
     "system_ul_interf_power_per_mhz",
+    "system_inr"
 ]
 
-def filter_fn(result_dir: str, is_suburban: bool) -> bool:
-    sub = "_suburban" if is_suburban else "_urban"
-    return "usa" in result_dir and sub in result_dir
-
-dl_urban_results = Results.load_many_from_dir(
+dl_results = Results.load_many_from_dir(
     dl_dir, only_latest=True,
     only_samples=attributes_to_plot,
-    filter_fn=lambda x: filter_fn(x, False)
 )
 
-# dl_suburban_results = Results.load_many_from_dir(
-#     dl_dir, only_latest=True,
-#     only_samples=attributes_to_plot,
-#     filter_fn=lambda x: filter_fn(x, True)
-# )
-ul_urban_results = Results.load_many_from_dir(
+ul_results = Results.load_many_from_dir(
     ul_dir, only_latest=True,
     only_samples=attributes_to_plot,
-    filter_fn=lambda x: filter_fn(x, False)
-)
-# ul_suburban_results = Results.load_many_from_dir(
-#     ul_dir, only_latest=True,
-#     only_samples=attributes_to_plot,
-#     filter_fn=lambda x: filter_fn(x, True)
-# )
 
-# ^: list[Results]
+)
 
 all_results = [
-    *dl_urban_results,
-    # *dl_suburban_results,
-    *ul_urban_results,
-    # *ul_suburban_results
+    *dl_results,
+    *ul_results,
 ]
-# ^: list[Results]
 
-# transforming dBm / MHz to dB / kHz
-# dBm -> dB means -30
-# /MHz -> /kHz means -30
-# for result in all_results:
-#     result.system_dl_interf_power_per_mhz = SampleList(
-#         np.array(result.system_dl_interf_power_per_mhz) - 30 - 30
-#     )
-#     result.system_ul_interf_power_per_mhz = SampleList(
-#         np.array(result.system_ul_interf_power_per_mhz) - 30 - 30
-#     )
+for result in all_results:
+    result.system_inr = SampleList(
+        np.array(result.system_inr))
 
 post_processor.add_results(all_results)
 
@@ -107,98 +75,141 @@ post_processor.add_plots(
     )
 )
 
-# Add a protection criteria line:
-# dB to dBm (+ 30)
-# the following conversion makes the criteria more strict, so there may not be a problem
 plots_to_add_vline = [
-    "system_ul_interf_power_per_mhz",
-    "system_dl_interf_power_per_mhz"
+    "system_inr",
+    "imt_ul_inr",
+    "imt_dl_inr",
 ]
-interf_protection_criteria = -161
 
+interf_protection_criteria = {
+    "Protection criterion [-6 dB]": [None, -6, "dash"],
+    "Protection criterion [-10 dB, 20%]": [0.2, -10, "dot"]
+}
+
+def add_protection_criteria(fig: go.Figure, interf_protection_criteria: dict) -> go.Figure:
+    """
+    Adiciona linhas de critério de proteção ao gráfico.
+    
+    Parâmetros:
+    - fig: go.Figure -> Gráfico Plotly onde as linhas serão adicionadas.
+    - interf_protection_criteria: dict -> Dicionário com critérios de proteção.
+    """
+    for legend_crite, val_crite in interf_protection_criteria.items():
+        # Adiciona a linha vertical
+        fig.add_trace(
+            go.Scatter(
+                x=[val_crite[1], val_crite[1]],
+                y=[0, 1],
+                mode='lines',
+                line=dict(dash=val_crite[2], color="black"),
+                name=legend_crite,
+                showlegend=True
+            )
+        )
+
+        # Adiciona a linha horizontal, se aplicável
+        if val_crite[0] is not None:
+            fig.add_hline(
+                y=val_crite[0],
+                line_dash=val_crite[2],
+                line_color="black",
+                annotation_text=f"{legend_crite}",
+                annotation_position="top left"
+            )
+
+    return fig
+
+def adjust_range_x(fig: go.Figure) -> go.Figure:
+    """
+    Ajusta automaticamente o eixo X do gráfico para melhor visualização.
+    
+    Parâmetros:
+    - fig: go.Figure -> Gráfico Plotly a ser ajustado.
+    """
+    lim = fig.full_figure_for_development(warn=False)
+    min_x_auto = lim.layout.xaxis.range[0] if lim.layout.xaxis.range else None
+    max_x_auto = lim.layout.xaxis.range[1] if lim.layout.xaxis.range else None
+
+    if min_x_auto is not None and max_x_auto is not None:
+        fig.update_layout(xaxis=dict(range=[min_x_auto - 1, max_x_auto + 4]))
+
+    return fig
+
+# Adiciona critérios de proteção aos gráficos selecionados
 for prop_name in plots_to_add_vline:
     for plot_type in ["cdf", "ccdf"]:
         plt = post_processor.get_plot_by_results_attribute_name(prop_name, plot_type=plot_type)
         if plt:
-            plt.add_vline(
-                interf_protection_criteria, line_dash="dash",
-                name="0.1% criteria"
-            )
+            plt = add_protection_criteria(plt, interf_protection_criteria)
+            plt = adjust_range_x(plt)
 
-system_dl_interf_power_plot = post_processor.get_plot_by_results_attribute_name("system_dl_interf_power_per_mhz")
-system_ul_interf_power_plot = post_processor.get_plot_by_results_attribute_name("system_ul_interf_power_per_mhz")
+system_inr_plot = post_processor.get_plot_by_results_attribute_name("system_inr")
 aggregated_plot = None
 
-if system_ul_interf_power_plot and system_dl_interf_power_plot:
+if system_inr_plot:
     aggregated_plot = go.Figure()
     cutoff_percentage = 0.001
     next_tick = 1
     ticks_at = []
+
     while next_tick > cutoff_percentage:
         ticks_at.append(next_tick)
         next_tick /= 10
+
     ticks_at.append(cutoff_percentage)
     ticks_at.reverse()
+
     aggregated_plot.update_layout(
-        title='CDF Plot for EESS Space Station receveid interference from Micro IMT in 7200 MHz',
-        title_font_size=26,
-        yaxis=dict(title="$\\text{P } (X < x)$",title_font_size=18, tickmode="array", tickvals=ticks_at, type="log", range=[np.log10(cutoff_percentage - cutoff_percentage/2), 0],tickfont=dict(size=18)),
-        xaxis=dict(title="Interference [dBW/kHz]",title_font_size=18,tickmode="linear", dtick=5 , range=[-195,-159],tickfont=dict(size=18)), 
+        title='CDF Plot for MSS Space Station received INR aggregated from Micro IMT in 7962.5 MHz',
+        title_font_size=22,
+        yaxis=dict(title="$\\text{P } (X < x)$", title_font_size=18, tickmode="array", tickvals=ticks_at, type="log", range=[np.log10(cutoff_percentage - cutoff_percentage/2), 0], tickfont=dict(size=18)),
+        xaxis=dict(title="INR [dB]", title_font_size=18, tickmode="linear", dtick=5, tickfont=dict(size=18)),
         legend=dict(
-            x=0.5,  # Posição horizontal
-            y=0.98,  # Posição vertical (98% do topo)
-            bgcolor="rgba(255, 255, 255, 0.5)",  # Fundo semi-transparente
-            bordercolor="rgba(0, 0, 0, 0.5)",  # Borda semi-transparente
-            borderwidth=1,  # Largura da borda
-            font=dict(size=18)  # Tamanho da legenda aumentado
+            x=0.55, y=0.1,
+            bgcolor="rgba(255, 255, 255, 0.5)",
+            bordercolor="rgba(0, 0, 0, 0.5)",
+            borderwidth=1,
+            font=dict(size=15),
+            xanchor="center",
+            yanchor="auto",
         ),
         meta={"plot_type": "cdf"},
     )
+    
     aggregated_ccdf_plot = go.Figure()
     aggregated_ccdf_plot.update_layout(
-        title='CCDF Plot for EESS Space Station receveid interference from Micro IMT in 7200 MHz',
-        title_font_size=26,
-        yaxis=dict(title="$\\text{P } (X > x)$",title_font_size=18, tickmode="array", tickvals=ticks_at, type="log", range=[np.log10(cutoff_percentage - cutoff_percentage/2), 0],tickfont=dict(size=18)),
-        xaxis=dict(title="Interference [dBW/kHz]",title_font_size=18,tickmode="linear", dtick=5 , range=[-195,-159],tickfont=dict(size=18)), 
+        title='CCDF Plot for MSS Space Station received INR aggregated from Micro IMT in 7962.5 MHz',
+        title_font_size=22,
+        yaxis=dict(title="$\\text{P } (X > x)$", title_font_size=18, tickmode="array", tickvals=ticks_at, type="log", range=[np.log10(cutoff_percentage - cutoff_percentage/2), 0], tickfont=dict(size=18)),
+        xaxis=dict(title="INR [dB]", title_font_size=18, tickmode="linear", dtick=5, tickfont=dict(size=18)),
         legend=dict(
-            x=0.5,  # Posição horizontal 
-            y=0.98,  # Posição vertical (98% do topo)
-            bgcolor="rgba(255, 255, 255, 0.5)",  # Fundo semi-transparente
-            bordercolor="rgba(0, 0, 0, 0.5)",  # Borda semi-transparente
-            borderwidth=1,  # Largura da borda
-            font=dict(size=20)  # Tamanho da legenda aumentado
+            x=0.55, y=0.1,
+            bgcolor="rgba(255, 255, 255, 0.5)",
+            bordercolor="rgba(0, 0, 0, 0.5)",
+            borderwidth=1,
+            font=dict(size=15),
+            xanchor="center",
+            yanchor="auto",
         ),
         meta={"plot_type": "cdf"},
     )
 
-    # we need to specify a common dir_name_contains substring so that we know which results we need to aggregate
-    
     # Como há apenas um resultado de cada tipo, você pode acessá-los diretamente
-    dl_urb_r = dl_urban_results[0]
-    ul_urb_r = ul_urban_results[0]  # Pega o único resultado de UL urbano
-    # ul_sub_r = ul_suburban_results[0]  # Pega o único resultado de UL suburban
-    # dl_sub_r = dl_suburban_results[0]  # Pega o único resultado de DL suburban
+    dl_urb_r = dl_results[0]
+    ul_urb_r = ul_results[0]  # Pega o único resultado de UL urbano
 
-    # Verifica se os resultados foram encontrados
-    """print("Resultado de UL urbano:", ul_urb_r)
-    print("Resultado de UL suburban:", ul_sub_r)
-    print("Resultado de DL suburban:", dl_sub_r)"""
-
-    # if None in [dl_sub_r, ul_sub_r, ul_urb_r]:
-    #     raise Exception(f"Cannot aggregate {legend1} and {legend2}")
-
-    # TODO: passar como parâmetro
     n_bs_sim = 19 * 3 * 3 * 7
 
+    # NOTE: From Table 13 Annex 4.15 for micro cells
+    ra_urban = np.array([.05, .1])  # ra1, ra2 urbano micro
     rb = np.array([.01, .03])  # rb1, rb2
-    ra_urban = np.array([.1, 0.45])  # ra1, ra2 urbano
-    ra_suburban = np.array([0.05, 0.2])  # ra1, ra2 suburbano
     
-    # area = 9867000  # US area (km²)
-    area = 9867000
+    area = 8515767 # área do Brasil exata
+    # area = 8510000 # área do Brasil utilizada como input
 
-    ds_urb = 10
-    ds_sub = 2.4
+    # Deployment density for IMT BS (BS/km²)
+    # NOTE: From Table 13 Annex 4.15 for micro cells
+    ds_urb = 30
 
     for i in range(2):
         # Cálculo do número real de estações base macro
@@ -216,132 +227,93 @@ if system_ul_interf_power_plot and system_dl_interf_power_plot:
         aggregated_results_list = []
 
         aggregated_results = PostProcessor.aggregate_results(
-            dl_samples=dl_urb_r.system_dl_interf_power_per_mhz,
-            ul_samples=ul_urb_r.system_ul_interf_power_per_mhz,
+            dl_samples=dl_urb_r.system_inr,
+            ul_samples=ul_urb_r.system_inr,
             ul_tdd_factor=0.25,
             n_bs_sim=n_bs_sim,
             n_bs_actual=n_bs_actual_urban,
             n_drops=10000
         )
-        # aggregated_results_sub = PostProcessor.aggregate_results(
-        #     dl_samples=dl_sub_r.system_dl_interf_power_per_mhz,
-        #     ul_samples=ul_sub_r.system_ul_interf_power_per_mhz,
-        #     ul_tdd_factor=0.25,
-        #     n_bs_sim=n_bs_sim,
-        #     n_bs_actual=n_bs_actual_suburban,
-        #     n_drops=10000
-        # )
-        # min_length = min(len(aggregated_results_sub), len(aggregated_results_urb))
-   
-   	#Somando os valores em escala linear 
-        # aggregated_results = 10**(aggregated_results_sub[:min_length]/10) + 10**(aggregated_results_urb[:min_length]/10)
-        
-        #Retornando a escala Logaritma 
-        # aggregated_results = 10*np.log10(aggregated_results_urb)
-        #print(aggregated_results_sub[:3], aggregated_results_urb[:3], aggregated_results[:3])
-        
-        """
-        #Testando apenas o Urbano e sub urbano por hora 
-        x_urban, y_urban = PostProcessor.cdf_from(aggregated_results_urb)
-        aggregated_plot.add_trace(
-            go.Scatter(x=x_urban, y=y_urban, mode='lines', name=f'Aggregated Urban CDF Ra{i+1}Rb{i+1}',),
-        )
-        x_urban, y_urban = PostProcessor.ccdf_from(aggregated_results_urb)
-        aggregated_ccdf_plot.add_trace(
-            go.Scatter(x=x_urban, y=y_urban, mode='lines', name=f'Aggregated Urban CCDF Ra{i+1}Rb{i+1}',),
-        )
-        
-        #Sub
-        x_suburban, y_suburban = PostProcessor.cdf_from(aggregated_results_sub)
-       # aggregated_plot.add_trace(
-       #     go.Scatter(x=x_suburban, y=y_suburban, mode='lines', name=f'Aggregated Suburban CDF Ra{i+1}Rb{i+1}',),
-       # )
-        x_suburban, y_suburban = PostProcessor.ccdf_from(aggregated_results_sub)
-       # aggregated_ccdf_plot.add_trace(
-       #     go.Scatter(x=x_suburban, y=y_suburban, mode='lines', name=f'Aggregated Suburban CCDF Ra{i+1}Rb{i+1}',),
-        #)
-	
-	"""
-	#Agregado total
-	
+
+	    #Agregado total	
         x, y = PostProcessor.cdf_from(aggregated_results)
 
         aggregated_plot.add_trace(
             go.Scatter(x=x, y=y, mode='lines', name=f'Ra{i+1}Rb{i+1}',),
         )
+        #Limite dos eixos 
+        # range_x = [min(range_x[0],min(x)),max(range_x[1],max(x))] 
 
         x, y = PostProcessor.ccdf_from(aggregated_results)
         aggregated_ccdf_plot.add_trace(
             go.Scatter(x=x, y=y, mode='lines', name=f'Ra{i+1}Rb{i+1}',),
         )
-    
-    """
-    aggregated_plot.add_vline(
-        interf_protection_criteria, line_dash="dash",
-        name="0.1% criteria"
-    )
-    aggregated_ccdf_plot.add_vline(
-        interf_protection_criteria, line_dash="dash",
-        name="0.1% criteria"
-    )
-    """
-    
-    #Modificação para a linhar ser um traço padrão 
+        #Limite dos eixos 
+        # range_x_ccdf = [min(range_x_ccdf[0],min(x)),max(range_x_ccdf[1],max(x))] 
+
     # Adicionando a linha vertical com uma legenda
-    aggregated_plot.add_trace(
-        go.Scatter(
-            x=[interf_protection_criteria, interf_protection_criteria],
-            y=[0, 1],  # Ajuste os valores de y conforme necessário
-            mode='lines',
-            line=dict(dash='dash', color='gray'),  # Estilo da linha
-            name='Protection criterion [-161 dBW/kHz, 0.1%]',  # Nome que aparecerá na legenda
-            showlegend=True  # Garante que apareça na legenda
-        )
-    )
+    # aggregated_plot.add_trace(
+    #     go.Scatter(
+    #         x=[interf_protection_criteria, interf_protection_criteria],
+    #         y=[0, 1],  # Ajuste os valores de y conforme necessário
+    #         mode='lines',
+    #         line=dict(dash='dash', color='gray'),  # Estilo da linha
+    #         name='Protection criterion [-6 dB]',  # Nome que aparecerá na legenda
+    #         showlegend=True  # Garante que apareça na legenda
+    #     )
+    # )
 
     # Adicionando a anotação (linha vertical)
-    aggregated_plot.add_vline(
-        x=interf_protection_criteria,
-        line_dash="dash",
-        line_color="gray",
-        opacity=0.75  #  ajuste a opacidade
-    )
+    # aggregated_plot.add_vline(
+    #     x=interf_protection_criteria,
+    #     line_dash="dash",
+    #     line_color="gray",
+    #     opacity=0.75  #  ajuste a opacidade
+    # )
 
-    # Repetindo o mesmo para o gráfico CCDF
-    aggregated_ccdf_plot.add_trace(
-        go.Scatter(
-            x=[interf_protection_criteria, interf_protection_criteria],
-            y=[0, 1],  # Ajuste os valores de y conforme necessário
-            mode='lines',
-            line=dict(dash='dash', color='black'),  # Estilo da linha
-            name='Protection criterion [-161 dBW/kHz, 0.1%]',  # Nome que aparecerá na legenda
-            showlegend=True  # Garante que apareça na legenda
-        )
-    )
+    # # Repetindo o mesmo para o gráfico CCDF
+    # aggregated_ccdf_plot.add_trace(
+    #     go.Scatter(
+    #         x=[interf_protection_criteria, interf_protection_criteria],
+    #         y=[0, 1],  # Ajuste os valores de y conforme necessário
+    #         mode='lines',
+    #         line=dict(dash='dash', color='black'),  # Estilo da linha
+    #         name='Protection criterion [-6 dB]',  # Nome que aparecerá na legenda
+    #         showlegend=True  # Garante que apareça na legenda
+    #     )
+    # )
 
     # Adicionando a anotação (linha vertical)
-    aggregated_ccdf_plot.add_vline(
-        x=interf_protection_criteria,
-        line_dash="dash",
-        line_color="gray",
-        opacity=0.75  # Ajuste a opacidade
-    )
+    # aggregated_ccdf_plot.add_vline(
+    #     x=interf_protection_criteria,
+    #     line_dash="dash",
+    #     line_color="gray",
+    #     opacity=0.75  # Ajuste a opacidade
+    # )
     #Linha horizontal no limite inferior
 
-    aggregated_plot.add_hline(
-        cutoff_percentage, line_dash="dash",
-        name="limite inferior"
-    )
-    aggregated_ccdf_plot.add_hline(
-        cutoff_percentage, line_dash="dash",
-        name="limite inferior"
-    )       
-            
-    
+    # aggregated_plot.add_hline(
+    #     cutoff_percentage, line_dash="dash",
+    #     name="limite inferior"
+    # )
+    # aggregated_ccdf_plot.add_hline(
+    #     cutoff_percentage, line_dash="dash",
+    #     name="limite inferior"
+    # )       
+
+    #Adicionando limites para o eixo x que faça sentido)
+    # aggregated_plot.update_layout(xaxis=dict(range = [range_x_ccdf[0]-1, max(range_x_ccdf[1],interf_protection_criteria)+4]))
+    # aggregated_ccdf_plot.update_layout(xaxis=dict(range = [range_x_ccdf[0]-1, max(range_x_ccdf[1],interf_protection_criteria)+4]))
+
+    aggregated_plot = add_protection_criteria(aggregated_plot, interf_protection_criteria)
+    aggregated_ccdf_plot = add_protection_criteria(aggregated_ccdf_plot, interf_protection_criteria)
+    aggregated_plot = adjust_range_x(aggregated_plot)
+    aggregated_ccdf_plot = adjust_range_x(aggregated_ccdf_plot)
+
 plots = [*post_processor.plots, aggregated_plot, aggregated_ccdf_plot]
 
 PostProcessor.save_plots(
-    os.path.join(campaign_base_dir, "output", "figs3"),
+    os.path.join(campaign_base_dir, "output", "figs"),
     plots,
     width = 1200,
     height= 800
