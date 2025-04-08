@@ -3,12 +3,10 @@ from pathlib import Path
 from sharc.results import Results, SampleList
 from sharc.post_processor import PostProcessor
 import plotly.graph_objects as go
-from sharc.parameters.parameters import Parameters
 
 import re
 import numpy as np
-from sharc.antenna.antenna_s465 import AntennaS465
-from sharc.antenna.antenna_beamforming_imt import AntennaBeamformingImt, PlotAntennaPattern
+from sharc.antenna.antenna_beamforming_imt import  PlotAntennaPattern
 
 campaign_base_dir = str((Path(__file__) / ".." / "..").resolve())
 dl_dir = os.path.join(campaign_base_dir, "output_dl")
@@ -17,49 +15,64 @@ ul_dir = os.path.join(campaign_base_dir, "output_ul")
 post_processor = PostProcessor()
 
 def legend_gen(dir_name):
-    #print(dir_name)
     link = re.search("_(dl|ul)", dir_name)
     if link is not None:
         link = link.group(1)
     else:
         return "None"
     
-    return f"{link.upper()} "
+    t = re.search("_(100km|550km)_", dir_name)
+    if t is not None:
+        t = t.group(1)
+    else:
+        return "None"
+
+    return f"{link.upper()} {t.capitalize()} "
 
 post_processor.add_plot_legend_generator(legend_gen)
 
 attributes_to_plot = [
-    "system_imt_antenna_gain",
-    "imt_system_path_loss",
-    "imt_system_antenna_gain",
-    "imt_dl_tx_power",
-    "imt_dl_tx_power_density",
-    "imt_ul_inr",
-    "imt_dl_inr",
+    # "system_imt_antenna_gain",
+    # "imt_system_path_loss",
+    # "imt_system_antenna_gain",
+    # "imt_dl_tx_power",
+    # "imt_dl_tx_power_density",
+    # "imt_ul_inr",
+    # "imt_dl_inr",
     "system_dl_interf_power_per_mhz",
-    "system_ul_interf_power_per_mhz",
-    "system_inr"
+    "system_ul_interf_power_per_mhz"
+    # "system_inr"
 ]
 
-dl_results = Results.load_many_from_dir(
-    dl_dir, only_latest=True,
-    only_samples=attributes_to_plot,
-)
+def filter_fn(x, is_100km):
+    return ("100km" in x if is_100km else "550km" in x)
 
-ul_results = Results.load_many_from_dir(
-    ul_dir, only_latest=True,
-    only_samples=attributes_to_plot,
+def load_results(base_dir, is_100km):
+    return Results.load_many_from_dir(
+        base_dir, only_latest=True,
+        only_samples=attributes_to_plot,
+        filter_fn=lambda x: filter_fn(x, is_100km)
+    )
 
-)
+dl_results_100km, ul_results_100km = load_results(dl_dir, True), load_results(ul_dir, True)
+dl_results_550km, ul_results_550km = load_results(dl_dir, False), load_results(ul_dir, False)
 
 all_results = [
-    *dl_results,
-    *ul_results,
+    *dl_results_100km,
+    *ul_results_100km,
+    *dl_results_550km,
+    *ul_results_550km,
 ]
 
+# dBm -> - 30 -> MHz
+#  dB -> - 30 -> kHz
 for result in all_results:
-    result.system_inr = SampleList(
-        np.array(result.system_inr))
+    result.system_dl_interf_power_per_mhz = SampleList(
+        np.array(result.system_dl_interf_power_per_mhz) - 30 - 30
+    )
+    result.system_ul_interf_power_per_mhz = SampleList(
+        np.array(result.system_ul_interf_power_per_mhz) - 30 - 30
+    )
 
 post_processor.add_results(all_results)
 
@@ -82,8 +95,7 @@ plots_to_add_vline = [
 ]
 
 interf_protection_criteria = {
-    "Protection criterion [-6 dB]": [None, -6, "dash"],
-    "Protection criterion [-10 dB, 20%]": [0.2, -10, "dot"]
+    "Protection criterion [-177 dBW/kHz, 0,1%]": [None, -177, "dash"],
 }
 
 def add_protection_criteria(fig: go.Figure, interf_protection_criteria: dict) -> go.Figure:
@@ -143,11 +155,36 @@ for prop_name in plots_to_add_vline:
             plt = add_protection_criteria(plt, interf_protection_criteria)
             plt = adjust_range_x(plt)
 
-system_inr_plot = post_processor.get_plot_by_results_attribute_name("system_inr")
-aggregated_plot = None
+system_dl_interf_power_plot = post_processor.get_plot_by_results_attribute_name("system_dl_interf_power_per_mhz")
+system_ul_interf_power_plot = post_processor.get_plot_by_results_attribute_name("system_ul_interf_power_per_mhz")
+aggregated_plot_100km = None
+aggregated_ccdf_plot_100km = None
+aggregated_plot_550km = None
+aggregated_ccdf_plot_550km = None
 
-if system_inr_plot:
-    aggregated_plot = go.Figure()
+def create_aggregated_plot(title, plot_type):
+    return go.Figure().update_layout(
+        title=title,
+        title_font_size=22,
+        yaxis=dict(title=f"$\\text{{P }} (X {'>' if plot_type == 'ccdf' else '<'} x)$",
+                   title_font_size=18, tickmode="array", tickvals=ticks_at,
+                   type="log", range=[np.log10(cutoff_percentage - cutoff_percentage / 2), 0],
+                   tickfont=dict(size=18)),
+        xaxis=dict(title="Interference [dBW/kHz]", title_font_size=18,
+                   tickmode="linear", dtick=5, tickfont=dict(size=18)),
+        legend=dict(x=0.55, y=0.1, bgcolor="rgba(255, 255, 255, 0.5)",
+                    bordercolor="rgba(0, 0, 0, 0.5)", borderwidth=1,
+                    font=dict(size=15), xanchor="center", yanchor="auto"),
+        meta={"plot_type": plot_type},
+    )
+
+if system_ul_interf_power_plot and system_dl_interf_power_plot:
+    aggregated_plot_100km = go.Figure()
+    aggregated_ccdf_plot_100km = go.Figure()
+    aggregated_plot_550km = go.Figure()
+    aggregated_ccdf_plot_550km = go.Figure()
+    comparison_ccdf_plot = go.Figure()
+
     cutoff_percentage = 0.001
     next_tick = 1
     ticks_at = []
@@ -159,206 +196,143 @@ if system_inr_plot:
     ticks_at.append(cutoff_percentage)
     ticks_at.reverse()
 
-    aggregated_plot.update_layout(
-        title='CDF Plot for MSS Space Station received INR aggregated from Micro IMT in 7962.5 MHz',
-        title_font_size=22,
-        yaxis=dict(title="$\\text{P } (X < x)$", title_font_size=18, tickmode="array", tickvals=ticks_at, type="log", range=[np.log10(cutoff_percentage - cutoff_percentage/2), 0], tickfont=dict(size=18)),
-        xaxis=dict(title="INR [dB]", title_font_size=18, tickmode="linear", dtick=5, tickfont=dict(size=18)),
-        legend=dict(
-            x=0.55, y=0.1,
-            bgcolor="rgba(255, 255, 255, 0.5)",
-            bordercolor="rgba(0, 0, 0, 0.5)",
-            borderwidth=1,
-            font=dict(size=15),
-            xanchor="center",
-            yanchor="auto",
-        ),
-        meta={"plot_type": "cdf"},
-    )
+    aggregated_plot_100km = create_aggregated_plot(
+        "CDF Aggregated Plot for SRS Space Station received interference (100 km²)", "cdf"
+        )
+    aggregated_ccdf_plot_100km = create_aggregated_plot(
+        "CCDF Aggregated Plot for SRS Space Station received interference (100 km²)", "ccdf"
+        )
+    aggregated_plot_550km = create_aggregated_plot(
+        "CDF Aggregated Plot for SRS Space Station received interference (550 km²)", "cdf"
+        )
+    aggregated_ccdf_plot_550km = create_aggregated_plot(
+        "CCDF Aggregated Plot for SRS Space Station received interference (550 km²)", "ccdf"
+        )
+    comparison_ccdf_plot = create_aggregated_plot(
+        "Comparison of CCDF Aggregated Plot for SRS Space Station receveid interference from Micro IMT in 7182 MHz", "ccdf"
+        )
     
-    aggregated_ccdf_plot = go.Figure()
-    aggregated_ccdf_plot.update_layout(
-        title='CCDF Plot for MSS Space Station received INR aggregated from Micro IMT in 7962.5 MHz',
-        title_font_size=22,
-        yaxis=dict(title="$\\text{P } (X > x)$", title_font_size=18, tickmode="array", tickvals=ticks_at, type="log", range=[np.log10(cutoff_percentage - cutoff_percentage/2), 0], tickfont=dict(size=18)),
-        xaxis=dict(title="INR [dB]", title_font_size=18, tickmode="linear", dtick=5, tickfont=dict(size=18)),
-        legend=dict(
-            x=0.55, y=0.1,
-            bgcolor="rgba(255, 255, 255, 0.5)",
-            bordercolor="rgba(0, 0, 0, 0.5)",
-            borderwidth=1,
-            font=dict(size=15),
-            xanchor="center",
-            yanchor="auto",
-        ),
-        meta={"plot_type": "cdf"},
+    post_processor.add_plots(
+    post_processor.generate_ccdf_plots_from_results(
+        all_results,
+        cutoff_percentage=0.001
+        )
+    )
+    post_processor.add_plots(
+        post_processor.generate_cdf_plots_from_results(
+            all_results,
+        )
     )
 
     # Como há apenas um resultado de cada tipo, você pode acessá-los diretamente
-    dl_urb_r = dl_results[0]
-    ul_urb_r = ul_results[0]  # Pega o único resultado de UL urbano
+    dl_100km = dl_results_100km[0]
+    ul_100km = ul_results_100km[0]
+    
+    dl_550km = dl_results_550km[0]
+    ul_550km = ul_results_550km[0]  # Pega o único resultado de UL urbano
 
     n_bs_sim = 19 * 3 * 3 * 7
 
     # NOTE: From Table 13 Annex 4.15 for micro cells
     ra_urban = np.array([.05, .1])  # ra1, ra2 urbano micro
-    rb = np.array([.01, .03])  # rb1, rb2
     
-    area = 8515767 # área do Brasil exata
-    # area = 8510000 # área do Brasil utilizada como input
+    area = np.array([1517697.32, 13238154.59])
 
     # Deployment density for IMT BS (BS/km²)
     # NOTE: From Table 13 Annex 4.15 for micro cells
     ds_urb = 30
 
-    for i in range(2):
-        # Cálculo do número real de estações base macro
-        # N_BS_ART ,  A * Ds*Ra*Rb
-        
-        # Ra1Rb1 (i=0)
-        # Ra2Rb2 (i=1)
-        
-        n_bs_actual_urban = int(area * ds_urb * ra_urban[i] * rb[i])  #
-        # n_bs_actual_suburban = int(area * ds_sub * ra_suburban[i] * rb[i])  #
-      
-        # print(f"Ra{i+1}Rb{i+1} : N_bs_urban = {n_bs_actual_urban} - N_bs_suburban = {n_bs_actual_suburban}")
-        print(f"Ra{i+1}Rb{i+1} : N_bs_urban = {n_bs_actual_urban}")
-        # Lista para armazenar os resultados
-        aggregated_results_list = []
+    for i in range(len(area)):  # Percorre cada área
+        if area[i] > 3500000:
+            rb_values = np.array([0.01, 0.03])  # rb1, rb2
+        else:
+            rb_values = np.array([0.01, 0.05])  # rb1, rb2
 
-        aggregated_results = PostProcessor.aggregate_results(
-            dl_samples=dl_urb_r.system_inr,
-            ul_samples=ul_urb_r.system_inr,
-            ul_tdd_factor=0.25,
-            n_bs_sim=n_bs_sim,
-            n_bs_actual=n_bs_actual_urban,
-            n_drops=10000
+        for j in range(len(ra_urban)):  # Percorre cada combinação de ra e rb
+            n_bs_actual_urban = int(area[i] * ds_urb * ra_urban[j] * rb_values[j])
+
+            print(f"Área {i+1} = {area[i]}, Ra{j+1}Rb{j+1} : N_bs_urban = {n_bs_actual_urban}")
+
+            aggregated_results_100km = PostProcessor.aggregate_results(
+                dl_samples=dl_100km.system_dl_interf_power_per_mhz,
+                ul_samples=ul_100km.system_ul_interf_power_per_mhz,
+                ul_tdd_factor=0.25,
+                n_bs_sim=n_bs_sim,
+                n_bs_actual=n_bs_actual_urban,
+                n_drops=10000
+            )
+
+            aggregated_results_550km = PostProcessor.aggregate_results(
+                dl_samples=dl_550km.system_dl_interf_power_per_mhz,
+                ul_samples=ul_550km.system_ul_interf_power_per_mhz,
+                ul_tdd_factor=0.25,
+                n_bs_sim=n_bs_sim,
+                n_bs_actual=n_bs_actual_urban,
+                n_drops=10000
+            )
+
+        #Agregado total	- 100 km²
+        x_100km, y_100km = PostProcessor.cdf_from(aggregated_results_100km)
+        # aggregated_plot_100km = go.Figure()
+        aggregated_plot_100km.add_trace(
+            go.Scatter(x=x_100km, y=y_100km, mode='lines', name=f'Ra{i+1}Rb{i+1}, area 100 km²')
+        )
+        x_ccdf_100km, y_ccdf_100km = PostProcessor.ccdf_from(aggregated_results_100km)
+        # aggregated_ccdf_plot_100km = go.Figure()
+        aggregated_ccdf_plot_100km.add_trace(
+            go.Scatter(x=x_ccdf_100km, y=y_ccdf_100km, mode='lines', name=f'Ra{i+1}Rb{i+1}, area 100 km²')
         )
 
-	    #Agregado total	
-        x, y = PostProcessor.cdf_from(aggregated_results)
-
-        aggregated_plot.add_trace(
-            go.Scatter(x=x, y=y, mode='lines', name=f'Ra{i+1}Rb{i+1}',),
+        #Agregado total	- 550 km²
+        x_550km, y_550km = PostProcessor.cdf_from(aggregated_results_550km)
+        # aggregated_plot_550km = go.Figure()
+        aggregated_plot_550km.add_trace(
+            go.Scatter(x=x_550km, y=y_550km, mode='lines', name=f'Ra{i+1}Rb{i+1}, area 550 km²')
         )
-        #Limite dos eixos 
-        # range_x = [min(range_x[0],min(x)),max(range_x[1],max(x))] 
-
-        x, y = PostProcessor.ccdf_from(aggregated_results)
-        aggregated_ccdf_plot.add_trace(
-            go.Scatter(x=x, y=y, mode='lines', name=f'Ra{i+1}Rb{i+1}',),
+        x_ccdf_550km, y_ccdf_550km = PostProcessor.ccdf_from(aggregated_results_550km)
+        # aggregated_ccdf_plot_5500km = go.Figure()
+        aggregated_ccdf_plot_550km.add_trace(
+            go.Scatter(x=x_ccdf_550km, y=y_ccdf_550km, mode='lines', name=f'Ra{i+1}Rb{i+1}, area 550 km²')
         )
-        #Limite dos eixos 
-        # range_x_ccdf = [min(range_x_ccdf[0],min(x)),max(range_x_ccdf[1],max(x))] 
 
-    # Adicionando a linha vertical com uma legenda
-    # aggregated_plot.add_trace(
-    #     go.Scatter(
-    #         x=[interf_protection_criteria, interf_protection_criteria],
-    #         y=[0, 1],  # Ajuste os valores de y conforme necessário
-    #         mode='lines',
-    #         line=dict(dash='dash', color='gray'),  # Estilo da linha
-    #         name='Protection criterion [-6 dB]',  # Nome que aparecerá na legenda
-    #         showlegend=True  # Garante que apareça na legenda
-    #     )
-    # )
+        # Comparação entre os dois agregados
+        comparison_ccdf_plot.add_trace(
+            go.Scatter(x=x_ccdf_100km, y=y_ccdf_100km, mode='lines', name=f'Ra{i+1}Rb{i+1}, area 100 km²')
+        )
+        comparison_ccdf_plot.add_trace(
+            go.Scatter(x=x_ccdf_550km, y=y_ccdf_550km, mode='lines', name=f'Ra{i+1}Rb{i+1}, area 550 km²')
+        )
+    # Ajusta eixos e critérios de proteção
+    aggregated_plot_100km = add_protection_criteria(aggregated_plot_100km, interf_protection_criteria)
+    aggregated_ccdf_plot_100km = add_protection_criteria(aggregated_ccdf_plot_100km, interf_protection_criteria)
+    aggregated_plot_550km = add_protection_criteria(aggregated_plot_550km, interf_protection_criteria)
+    aggregated_ccdf_plot_550km = add_protection_criteria(aggregated_ccdf_plot_550km, interf_protection_criteria)
+    comparison_ccdf_plot = add_protection_criteria(comparison_ccdf_plot, interf_protection_criteria)
 
-    # Adicionando a anotação (linha vertical)
-    # aggregated_plot.add_vline(
-    #     x=interf_protection_criteria,
-    #     line_dash="dash",
-    #     line_color="gray",
-    #     opacity=0.75  #  ajuste a opacidade
-    # )
+    # Ajusta o range dos eixos
+    aggregated_plot_100km = adjust_range_x(aggregated_plot_100km)
+    aggregated_ccdf_plot_100km = adjust_range_x(aggregated_ccdf_plot_100km)
+    aggregated_plot_550km = adjust_range_x(aggregated_plot_550km)
+    aggregated_ccdf_plot_550km = adjust_range_x(aggregated_ccdf_plot_550km)
+    comparison_ccdf_plot = adjust_range_x(comparison_ccdf_plot)
 
-    # # Repetindo o mesmo para o gráfico CCDF
-    # aggregated_ccdf_plot.add_trace(
-    #     go.Scatter(
-    #         x=[interf_protection_criteria, interf_protection_criteria],
-    #         y=[0, 1],  # Ajuste os valores de y conforme necessário
-    #         mode='lines',
-    #         line=dict(dash='dash', color='black'),  # Estilo da linha
-    #         name='Protection criterion [-6 dB]',  # Nome que aparecerá na legenda
-    #         showlegend=True  # Garante que apareça na legenda
-    #     )
-    # )
+plots = [
+    *post_processor.plots,
+    aggregated_plot_100km,
+    aggregated_ccdf_plot_100km,
+    aggregated_plot_550km,
+    aggregated_ccdf_plot_550km,
+    comparison_ccdf_plot
+]
 
-    # Adicionando a anotação (linha vertical)
-    # aggregated_ccdf_plot.add_vline(
-    #     x=interf_protection_criteria,
-    #     line_dash="dash",
-    #     line_color="gray",
-    #     opacity=0.75  # Ajuste a opacidade
-    # )
-    #Linha horizontal no limite inferior
-
-    # aggregated_plot.add_hline(
-    #     cutoff_percentage, line_dash="dash",
-    #     name="limite inferior"
-    # )
-    # aggregated_ccdf_plot.add_hline(
-    #     cutoff_percentage, line_dash="dash",
-    #     name="limite inferior"
-    # )       
-
-    #Adicionando limites para o eixo x que faça sentido)
-    # aggregated_plot.update_layout(xaxis=dict(range = [range_x_ccdf[0]-1, max(range_x_ccdf[1],interf_protection_criteria)+4]))
-    # aggregated_ccdf_plot.update_layout(xaxis=dict(range = [range_x_ccdf[0]-1, max(range_x_ccdf[1],interf_protection_criteria)+4]))
-
-    aggregated_plot = add_protection_criteria(aggregated_plot, interf_protection_criteria)
-    aggregated_ccdf_plot = add_protection_criteria(aggregated_ccdf_plot, interf_protection_criteria)
-    aggregated_plot = adjust_range_x(aggregated_plot)
-    aggregated_ccdf_plot = adjust_range_x(aggregated_ccdf_plot)
-
-plots = [*post_processor.plots, aggregated_plot, aggregated_ccdf_plot]
-
-PostProcessor.save_plots(
-    os.path.join(campaign_base_dir, "output", "figs"),
-    plots,
-    width = 1200,
-    height= 800
-)
+# PostProcessor.save_plots(
+#     os.path.join(campaign_base_dir, "output", "figs"),
+#     plots,
+#     width = 1200,
+#     height= 800
+# )
 
 plot_antenna_imt = PlotAntennaPattern("")
 
 for plot in plots:
     plot.show()
-
-"""
-# Filtra e exibe apenas os gráficos Individuais coforme a escolha 
-graf = "MHz from IMT DL"
-for plot in post_processor.plots:
-    title = plot.layout.title.text  # Obtém o título do gráfico
-    if graf in title:  # Verifica se "graf" está no título
-        plot.show()  # Exibe o gráfico no navegador
-"""
-        
-# Plot BS TX radiation patterns
-# f = plot_antenna_imt.plot_element_pattern(antenna_bs, "BS", "ELEMENT")
-# # f.savefig(figs_dir + "BS_element.pdf", bbox_inches='tight')
-# f = plot_antenna_imt.plot_element_pattern(antenna_bs, "TX", "ARRAY")
-# # f.savefig(figs_dir + "BS_array.pdf", bbox_inches='tight')
-
-# # Plot UE TX radiation patterns
-# plot_antenna_imt.plot_element_pattern(antenna_ue, "UE", "ELEMENT")
-# plot_antenna_imt.plot_element_pattern(antenna_ue, "UE", "ARRAY")
-
-# Plot every plot:
-# for plot in plots:
-#     plot.show()
-
-# full_results = ""
-
-# for result in all_results:
-#     # This generates the mean, median, variance, etc
-#     stats = PostProcessor.generate_statistics(
-#         result=result
-#     ).write_to_results_dir()
-
-#     full_results += str(stats) + "\n"
-#     # # do whatever you want here:
-#     # if "fspl_45deg" in stats.results_output_dir:
-#     #     get some stat and do something
-
-# with open(dl_dir + "/stats.txt", "w") as f:
-#     f.write(full_results)

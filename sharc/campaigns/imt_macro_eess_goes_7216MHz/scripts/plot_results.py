@@ -338,12 +338,12 @@ if system_ul_interf_power_plot and system_dl_interf_power_plot:
     
 plots = [*post_processor.plots, aggregated_plot, aggregated_ccdf_plot]
 
-PostProcessor.save_plots(
-    os.path.join(campaign_base_dir, "output", "figs3"),
-    plots,
-    width = 1200,
-    height= 1200
-)
+# PostProcessor.save_plots(
+#     os.path.join(campaign_base_dir, "output", "figs3"),
+#     plots,
+#     width = 1200,
+#     height= 1200
+# )
 
 plot_antenna_imt = PlotAntennaPattern("")
 
