@@ -75,45 +75,41 @@ class PropagationClutterLoss(Propagation):
             array with clutter loss values with dimensions of distance
 
         """
-        f = kwargs["frequency"]
+        #OBS: TANTO "f", quanto "d" são lidos como listas de listas ou seja como um vetor coluna, que me parece inapropriado adicionei o [0]
+        f = kwargs["frequency"][0]
         loc_per = kwargs.pop("loc_percentage", "RANDOM")
         type = kwargs["station_type"]
-        d = kwargs["distance"]
+        d = kwargs["distance"][0]
         percent_clutter = kwargs.pop("percent_clutter", 1.0)
         if percent_clutter < 0.0 or percent_clutter > 1.0:
             raise ValueError("percent_clutter must be between 0 and 1")
         if percent_clutter == 0.0:
             return np.zeros(d.shape)
 
-        # Apply clutter only to a subset of the links
-        # according to the percentage of clutter.
-        orig_shape = d.shape
-        clutter_idxs = np.where(np.random.random(d.shape) < percent_clutter)[0]
-
-        if len(clutter_idxs) == 0:
-            return np.zeros(d.shape)
-
-        d = d[clutter_idxs]
-        f = f[clutter_idxs]
-        loc_per = loc_per[clutter_idxs]
-
         if f.size == 1:
             f = f * np.ones(d.shape)
 
         if isinstance(loc_per, str) and loc_per.upper() == "RANDOM":
-            p = self.random_number_gen.random_sample(d.shape)
+            p1 = self.random_number_gen.random_sample(d.shape)
+            p2 = self.random_number_gen.random_sample(d.shape)
         else:
-            p = loc_per * np.ones(d.shape)
+            p1 = loc_per * np.ones(d.shape)
 
         if type is StationType.IMT_BS or type is StationType.IMT_UE or type is StationType.FSS_ES:
             clutter_loss = self.get_terrestrial_clutter_loss(f, d, p1, True) + self.get_terrestrial_clutter_loss(f, d, p2, False)
         else:
             theta = kwargs["elevation"]
             clutter_loss = self.get_spacial_clutter_loss(f, theta, p1)
+            mult_1 = np.zeros(d.shape)
+            # Calcula o número de elementos que devem ser 1, arredondando para o inteiro mais próximo
+            num_ones = int(np.round(mult_1.size * percent_clutter))
+            # Seleciona aleatoriamente os índices onde os 1's serão alocados (sem repetição)
+            indices = np.random.choice(mult_1.size, size=num_ones, replace=False)
+            # Atribui 1 aos índices escolhidos
+            mult_1.flat[indices] = 1
+            clutter_loss *= mult_1
 
-        loss = np.zeros(orig_shape)
-        loss[clutter_idxs] = clutter_loss
-        return loss
+        return clutter_loss
 
     def get_spacial_clutter_loss(
         self, frequency: float,
@@ -239,7 +235,6 @@ class PropagationClutterLoss(Propagation):
             id_max = np.where(loss >= loss_2km)[0]
             loss[id_max] = loss_2km[id_max]
 
-        loss *= 2
         loss = loss.reshape(distance.shape)
 
         return loss

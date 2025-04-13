@@ -58,6 +58,8 @@ class ParametersEessSS(ParametersSpaceStation):
     earth_station_lat_deg: float = 0.0
     earth_station_long_diff_deg: float = 0.0
     season: str = "SUMMER"
+    # Indicates the percentage of links that have clutter loss
+    percent_clutter: float = 1.0
 
     ########### Creates a statistical distribution of nadir angle###############
     ############## following variables nadir_angle_distribution#################

@@ -40,6 +40,9 @@ class ParametersSingleSpaceStation(ParametersBase):
     # check if IMT parameters don't come in values for single polarization
     # before adding loss here
     polarization_loss: float = 0.0
+    
+    # Indicates the percentage of links that have clutter loss
+    percent_clutter: float = 1.0
 
     # Channel model, possible values are "FSPL" (free-space path loss), "P619"
     channel_model: typing.Literal[
@@ -157,6 +160,7 @@ class ParametersSingleSpaceStation(ParametersBase):
         self.param_p619.space_station_alt_m = self.geometry.altitude
         self.param_p619.earth_station_alt_m = self.geometry.es_altitude
         self.param_p619.earth_station_lat_deg = self.geometry.es_lat_deg
+        self.param_p619.percent_clutter = self.percent_clutter
 
         # this is needed because nested parameters
         # don't know/cannot access parents attributes
