@@ -33,11 +33,9 @@ post_processor.add_plot_legend_generator(legend_gen)
 
 # Atributos a serem plotados
 attributes_to_plot = [
-    #"system_imt_antenna_gain",
-    #"imt_system_path_loss",
-    #"imt_system_antenna_gain",
-    "system_dl_interf_power_per_mhz",
-    "system_ul_interf_power_per_mhz",
+    "system_inr",
+    "system_imt_antenna_gain",
+    "imt_system_antenna_gain",
 ]
 
 # Carrega os resultados para diferentes cenários
@@ -57,19 +55,6 @@ all_results = [
     *ul_urban_results,
 ]
 
-#print(all_results)
-
-# transforming dBm / MHz to dB / kHz
-# dBm -> dB means -30
-# /MHz -> /kHz means -30
-for result in all_results:
-    result.system_dl_interf_power_per_mhz = SampleList(
-        np.array(result.system_dl_interf_power_per_mhz) - 30 - 30
-    )
-    result.system_ul_interf_power_per_mhz = SampleList(
-        np.array(result.system_ul_interf_power_per_mhz) - 30 - 30
-    )
-
 # Adiciona os resultados ao pós-processador
 post_processor.add_results(all_results)
 
@@ -77,7 +62,7 @@ post_processor.add_results(all_results)
 post_processor.add_plots(
     post_processor.generate_ccdf_plots_from_results(
         all_results,
-        cutoff_percentage=0.001
+        cutoff_percentage=0.0001
     )
 )
 
@@ -89,13 +74,14 @@ post_processor.add_plots(
 
 # Lista de atributos para adicionar linhas de critério de proteção
 plots_to_add_vline = [
-    "system_ul_interf_power_per_mhz",
-    "system_dl_interf_power_per_mhz"
+    "system_inr"
 ]
 
 # Critérios de proteção: linha horizontal, linha vertical, estilo tracejado
 interf_protection_criteria = {
-    "Protection criterion [-161 dBW/kHz, 0.1%]": [0.001, -161, "dash"]
+    "Protection criterion [-6 dB, 0.03%]": [0.0003, -6, "dash", "gray"],
+    "Protection criterion [-7 dB, 0.1%]": [0.001, -7, "dot", "gray"],
+    "Protection criterion [-10.5 dB, 20%]": [0.2, -10.5, "dashdot", "gray"]
 }
 
 def add_protection_criteria(fig: go.Figure, interf_protection_criteria: dict) -> go.Figure:
@@ -113,7 +99,7 @@ def add_protection_criteria(fig: go.Figure, interf_protection_criteria: dict) ->
                 x=[val_crite[1], val_crite[1]],
                 y=[0, 1],
                 mode='lines',
-                line=dict(dash=val_crite[2], color="black"),
+                line=dict(dash=val_crite[2], color=val_crite[3]),
                 name=legend_crite,
                 showlegend=True
             )
@@ -124,7 +110,7 @@ def add_protection_criteria(fig: go.Figure, interf_protection_criteria: dict) ->
             fig.add_hline(
                 y=val_crite[0],
                 line_dash=val_crite[2],
-                line_color="black",
+                line_color=val_crite[3],
             )
 
     return fig
@@ -154,14 +140,14 @@ for prop_name in plots_to_add_vline:
             plt = adjust_range_x(plt)
 
 # Gera gráficos agregados para interferencia
-system_dl_interf_power_plot = post_processor.get_plot_by_results_attribute_name("system_dl_interf_power_per_mhz")
-system_ul_interf_power_plot = post_processor.get_plot_by_results_attribute_name("system_ul_interf_power_per_mhz")
+system_dl_inr_plot = post_processor.get_plot_by_results_attribute_name("system_inr")
+system_ul_inr_plot = post_processor.get_plot_by_results_attribute_name("system_inr")
 
 aggregated_plot = go.Figure()
 aggregated_ccdf_plot = go.Figure()
 
-if system_ul_interf_power_plot and system_dl_interf_power_plot:
-    cutoff_percentage = 0.001
+if system_ul_inr_plot and system_dl_inr_plot:
+    cutoff_percentage = 0.0001
     next_tick = 1
     ticks_major = []
     ticks_minor = []
@@ -185,8 +171,13 @@ if system_ul_interf_power_plot and system_dl_interf_power_plot:
     all_ticks = np.sort(np.unique(np.concatenate((ticks_major, ticks_minor))))
     ticktext = [str(tick) if tick in ticks_major else "" for tick in all_ticks]
 
+    # Create tick labels so that only major ticks are labeled
+    all_ticks = np.sort(np.unique(np.concatenate((ticks_major, ticks_minor))))
+    ticktext = [f'10<sup><span style="font-size: 1.2em;">{int(np.floor(np.log10(tick)))}</span></sup>' if tick in ticks_major else "" for tick in all_ticks]
+
+
     aggregated_plot.update_layout(
-                        title=f'Aggregated CDF Plot for system receveid interference from Micro IMT in 8175 MHz',
+                        title=f'Aggregated CDF Plot for system Station J receveid interference from Micro IMT at 8150 MHz',
                         xaxis_title="Interference Power [dBm/MHz]",
                         yaxis_title="$\\text{P } (X > x)$",
                         yaxis=dict(tickmode="array", tickvals=[0, 0.25, 0.5, 0.75, 1]),
@@ -196,11 +187,11 @@ if system_ul_interf_power_plot and system_dl_interf_power_plot:
                     )
     
     aggregated_ccdf_plot.update_layout(
-                        # title=f'Aggregated CCDF Plot for MetSat Space Station receveid interference from Micro IMT in 8175 MHz',
-                        xaxis_title="Interference Power [dBm/MHz]",
+                        title=f'Aggregated CCDF Plot for system Station J receveid interference from Micro IMT at 8150 MHz',
+                        xaxis_title="INR [dB]",
                         yaxis_title="$\\text{P } I > X$",
                         yaxis=dict(tickmode="array", tickvals=all_ticks, type="log",
-                                   range=[np.log10(cutoff_percentage-cutoff_percentage/4), 0],
+                                   range=[np.log10(cutoff_percentage), 0],
                                    ticktext=ticktext,
                                    gridcolor="lightgray",
                                    gridwidth=.5,
@@ -212,7 +203,7 @@ if system_ul_interf_power_plot and system_dl_interf_power_plot:
                                    gridwidth=.5,
                                    griddash="dot"
                                    ),
-                        legend_title="Labels",
+                        # legend_title="Labels",
                         meta={"plot_type": "ccdf"},
                         plot_bgcolor="white",
                         paper_bgcolor="white",
@@ -238,8 +229,8 @@ if system_ul_interf_power_plot and system_dl_interf_power_plot:
                             )
                         ],
                         legend=dict(
-                            x=0.95,          # x position (95% from the left)
-                            y=0.95,          # y position (95% from the bottom)
+                            x=0.75,          # x position (95% from the left)
+                            y=0.8,          # y position (95% from the bottom)
                             xanchor='right', # anchor the legend's right side at x=0.95
                             yanchor='top',   # anchor the legend's top at y=0.95
                             bgcolor='rgba(255,255,255,0.5)',  # Optional: semi-transparent white background
@@ -247,6 +238,44 @@ if system_ul_interf_power_plot and system_dl_interf_power_plot:
                             borderwidth=1                     # Optional: border width in pixels
                         )
                     )
+    
+#Gambiarra(Exite o minor no ploty que talze possa funcionar )
+# # -------- Adicionando linhas para simular os subtick (Jeito tosco)
+# lim_infe = -64 #limite inferior no eixo x( e o valor que esta na adjust_range_x)
+# lim_supe = -5 #limite superior no eixo x( e o valor que esta na adjust_range_x)
+
+# tamanho_maior = 0.4    
+# tamanho_menor = 0.2
+
+# # Adiciona as linhas horizontais (a Esquerda e a Direita)
+# for tick in all_ticks :
+#     infe = 1
+#     for lim in (lim_infe,lim_supe):
+#         aggregated_ccdf_plot.add_trace(
+#             go.Scatter(
+#                 x=[lim, lim + infe*(tamanho_maior if tick in ticks_major else tamanho_menor)],
+#                 y=[tick,tick],
+#                 mode='lines',
+#                 line=dict(dash="solid", width=1.5,color="gray"),
+#                 name = "subtick",
+#                 showlegend=False
+#             )
+#         )
+#         infe = -1
+
+# #Linhas Verticais
+# for i in range(lim_infe,lim_supe,5):
+#     ymin = 0.000013
+#     aggregated_ccdf_plot.add_trace(
+#             go.Scatter(
+#                 x=[i,i],
+#                 y=[0, ymin], #ultimo numero e apenas um fator de tamanho que escolho(reduz) 
+#                 mode='lines',
+#                 line=dict(dash="solid", width=1.5,color="gray"),
+#                 name = "subtick",
+#                 showlegend=False
+#             )
+#         )
 
    # Acessa os resultados diretamente
     dl_urb_r = dl_urban_results[0]
@@ -268,51 +297,46 @@ if system_ul_interf_power_plot and system_dl_interf_power_plot:
     # NOTE: From Table 13 Annex 4.15 for micro cells
     ds_urb = 30
 
-    for i in range(1):
-        n_bs_actual_urban = int(area * ds_urb * ra_urban[i] * rb[i])
+    aggregated_results_ra1rb1 = PostProcessor.aggregate_results(
+        dl_samples=dl_urb_r.system_inr,
+        ul_samples=ul_urb_r.system_inr,
+        ul_tdd_factor=0.25,
+        n_bs_sim=n_bs_sim,
+        n_bs_actual=166500,
+        n_drops=10000
+    )
 
-        aggregated_results_ra1rb1 = PostProcessor.aggregate_results(
-            dl_samples=dl_urb_r.system_dl_interf_power_per_mhz,
-            ul_samples=ul_urb_r.system_ul_interf_power_per_mhz,
-            ul_tdd_factor=0.25,
-            n_bs_sim=n_bs_sim,
-            n_bs_actual=166500,
-            n_drops=10000
-        )
+    aggregated_results_ra2rb1 = PostProcessor.aggregate_results(
+        dl_samples=dl_urb_r.system_inr,
+        ul_samples=ul_urb_r.system_inr,
+        ul_tdd_factor=0.25,
+        n_bs_sim=n_bs_sim,
+        n_bs_actual=303310,
+        n_drops=10000
+    )
 
-        aggregated_results_ra2rb1 = PostProcessor.aggregate_results(
-            dl_samples=dl_urb_r.system_dl_interf_power_per_mhz,
-            ul_samples=ul_urb_r.system_ul_interf_power_per_mhz,
-            ul_tdd_factor=0.25,
-            n_bs_sim=n_bs_sim,
-            n_bs_actual=303310,
-            n_drops=10000
-        )
+    x, y = PostProcessor.cdf_from(aggregated_results_ra2rb1)
+    aggregated_plot.add_trace(
+        go.Scatter(x=x, y=y, mode='lines', name=legenda),
+    )
 
-        #Para o micro existe apenas o Urbano 
-        # aggregated_results = aggregated_results_urb
+    x, y = PostProcessor.ccdf_from(aggregated_results_ra1rb1)
+    aggregated_ccdf_plot.add_trace(
+        go.Scatter(x=x, y=y, mode='lines', name="Ra1Rb1"),
+    )
 
-        # x, y = PostProcessor.cdf_from(aggregated_results)
-        # aggregated_plot.add_trace(
-        #     go.Scatter(x=x, y=y, mode='lines', name=legenda),
-        # )
+    x, y = PostProcessor.ccdf_from(aggregated_results_ra2rb1)
+    aggregated_ccdf_plot.add_trace(
+        go.Scatter(x=x, y=y, mode='lines', name="Ra2Rb1"),
+    )
 
-        x, y = PostProcessor.ccdf_from(aggregated_results_ra1rb1)
-        aggregated_ccdf_plot.add_trace(
-            go.Scatter(x=x, y=y, mode='lines', name="Ra1Rb1"),
-        )
-        
-        x, y = PostProcessor.ccdf_from(aggregated_results_ra2rb1)
-        aggregated_ccdf_plot.add_trace(
-            go.Scatter(x=x, y=y, mode='lines', name="Ra2Rb1"),
-        )
-
-    # aggregated_plot = add_protection_criteria(aggregated_plot, interf_protection_criteria)
-    aggregated_ccdf_plot = add_protection_criteria(aggregated_ccdf_plot, interf_protection_criteria)
-    # aggregated_plot = adjust_range_x(aggregated_plot)
-    aggregated_ccdf_plot = adjust_range_x(aggregated_ccdf_plot)
+aggregated_plot = add_protection_criteria(aggregated_plot, interf_protection_criteria)
+aggregated_ccdf_plot = add_protection_criteria(aggregated_ccdf_plot, interf_protection_criteria)
+aggregated_plot = adjust_range_x(aggregated_plot)
+aggregated_ccdf_plot = adjust_range_x(aggregated_ccdf_plot)
 
 plots = [*post_processor.plots, aggregated_plot, aggregated_ccdf_plot]
+# plots = [*post_processor.plots, aggregated_ccdf_plot]
 
 PostProcessor.save_plots(
     os.path.join(campaign_base_dir, "output"),

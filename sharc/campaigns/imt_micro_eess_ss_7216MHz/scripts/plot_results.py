@@ -33,9 +33,9 @@ post_processor.add_plot_legend_generator(legend_gen)
 
 # Atributos a serem plotados
 attributes_to_plot = [
-    #"system_imt_antenna_gain",
+    "system_imt_antenna_gain",
     #"imt_system_path_loss",
-    #"imt_system_antenna_gain",
+    # "imt_system_antenna_gain",
     "system_dl_interf_power_per_mhz",
     "system_ul_interf_power_per_mhz",
 ]
@@ -196,7 +196,7 @@ if system_ul_interf_power_plot and system_dl_interf_power_plot:
                     )
     
     aggregated_ccdf_plot.update_layout(
-                        # title=f'Aggregated CCDF Plot for MetSat Space Station receveid interference from Micro IMT in 8175 MHz',
+                        title=f'Aggregated CCDF Plot for EESS Space Station receveid interference from Micro IMT in 7216 MHz',
                         xaxis_title="Interference Power [dBm/MHz]",
                         yaxis_title="$\\text{P } I > X$",
                         yaxis=dict(tickmode="array", tickvals=all_ticks, type="log",
@@ -279,7 +279,6 @@ if system_ul_interf_power_plot and system_dl_interf_power_plot:
             n_bs_actual=166500,
             n_drops=10000
         )
-
         aggregated_results_ra2rb1 = PostProcessor.aggregate_results(
             dl_samples=dl_urb_r.system_dl_interf_power_per_mhz,
             ul_samples=ul_urb_r.system_ul_interf_power_per_mhz,
@@ -301,7 +300,7 @@ if system_ul_interf_power_plot and system_dl_interf_power_plot:
         aggregated_ccdf_plot.add_trace(
             go.Scatter(x=x, y=y, mode='lines', name="Ra1Rb1"),
         )
-        
+
         x, y = PostProcessor.ccdf_from(aggregated_results_ra2rb1)
         aggregated_ccdf_plot.add_trace(
             go.Scatter(x=x, y=y, mode='lines', name="Ra2Rb1"),

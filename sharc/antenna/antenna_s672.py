@@ -6,7 +6,8 @@ Created on Thu Apr 13 17:18:59 2017
 """
 
 from sharc.antenna.antenna import Antenna
-from sharc.parameters.parameters_fss_ss import ParametersFssSs
+from sharc.parameters.parameters_single_space_station import ParametersSingleSpaceStation
+
 
 import numpy as np
 import sys
@@ -18,7 +19,7 @@ class AntennaS672(Antenna):
     according to Recommendation ITU-R S.672-4 Annex 1
     """
 
-    def __init__(self, param: ParametersFssSs):
+    def __init__(self, param: ParametersSingleSpaceStation):
         super().__init__()
         self.peak_gain = param.antenna_gain
         self.l_s = param.antenna_l_s
@@ -45,6 +46,11 @@ class AntennaS672(Antenna):
         psi = np.absolute(kwargs["off_axis_angle_vec"])
         # print("psi", psi)
 
+        # cutting_angle = kwargs.get("cut_angle")
+        cutting_angle = 0.4
+        if cutting_angle is not None:
+            print("cutting", cutting_angle)
+
         gain = np.zeros(len(psi))
 
         idx_0 = np.where(psi < self.psi_0)
@@ -60,63 +66,104 @@ class AntennaS672(Antenna):
         idx_3 = np.where((self.b * self.psi_0 < psi) & (psi <= self.psi_1))[0]
         gain[idx_3] = self.peak_gain + self.l_s + \
             20 - 25 * np.log10(psi[idx_3] / self.psi_0)
+        
+        #Applying crop factor
+        if cutting_angle : 
+            idx_cut = np.where((psi <= cutting_angle))[0]
+            gain[idx_cut] = -500 #very low arbitrary gain
 
         return gain
 
 
 if __name__ == '__main__':
-    import matplotlib.pyplot as plt
 
-    # initialize antenna parameters
-    param = ParametersFssSs()
-    param.antenna_gain = 50
+    import matplotlib.pyplot as plt
+    # initialize antenna parameters Cenario 1
+    param = ParametersSingleSpaceStation()
+    param.antenna_gain = 55
     param.antenna_pattern = "ITU-R S.672-4"
-    param.antenna_3_dB = 20
-    psi = np.linspace(1, 30, num=1000)
+    param.antenna_3_dB = 0.29
+    psi = np.linspace(0.1, 90, num=10000)
 
     param.antenna_l_s = -20
     antenna = AntennaS672(param)
-    gain20 = antenna.calculate_gain(off_axis_angle_vec=psi)
+    gain = antenna.calculate_gain(off_axis_angle_vec=psi)
 
-    param.antenna_l_s = -25
-    antenna = AntennaS672(param)
-    gain25 = antenna.calculate_gain(off_axis_angle_vec=psi)
 
-    param.antenna_l_s = -30
-    antenna = AntennaS672(param)
-    gain30 = antenna.calculate_gain(off_axis_angle_vec=psi)
+    # param.antenna_l_s = -20
+    # antenna = AntennaS672(param)
+    # gain20 = antenna.calculate_gain(off_axis_angle_vec=psi)
+
+    # param.antenna_l_s = -25
+    # antenna = AntennaS672(param)
+    # gain25 = antenna.calculate_gain(off_axis_angle_vec=psi)
+
+    # param.antenna_l_s = -30
+    # antenna = AntennaS672(param)
+    # gain30 = antenna.calculate_gain(off_axis_angle_vec=psi)
 
     fig = plt.figure(
         figsize=(12, 7), facecolor='w',
         edgecolor='k',
     )  # create a figure object
 
-    plt.semilogx(
-        psi, gain20 - param.antenna_gain,
-        "-b", label="$L_S = -20$ dB",
-    )
-    plt.semilogx(
-        psi, gain25 - param.antenna_gain,
-        "-r", label="$L_S = -25$ dB",
-    )
-    plt.semilogx(
-        psi, gain30 - param.antenna_gain,
-        "-g", label="$L_S = -30$ dB",
-    )
+    # plt.semilogx(
+    #     psi, gain20 - param.antenna_gain,
+    #     "-b", label="$L_S = -20$ dB",
+    # )
+    # plt.semilogx(
+    #     psi, gain25 - param.antenna_gain,
+    #     "-r", label="$L_S = -25$ dB",
+    # )
+    # plt.semilogx(
+    #     psi, gain30 - param.antenna_gain,
+    #     "-g", label="$L_S = -30$ dB",
+    # )
 
-    plt.ylim((-33.8, 0))
-    plt.xlim((1, 100))
-    plt.title("ITU-R S.672-4 antenna radiation pattern")
-    plt.xlabel(r"Relative off-axis angle, $\psi/\psi_0$")
-    plt.ylabel("Gain relative to $G_m$ [dB]")
+    plt.semilogx(
+            psi, gain ,
+            "-b", label=f"BW = {param.antenna_3_dB}º, gain = {param.antenna_gain} dBi",
+        )
+    
+    """
+    plt.semilogx(
+        psi, gain_2 ,
+        "-r", label=f"BW = {param2.antenna_3_dB }º, gain = {param2.antenna_gain} dBi",
+    ) 
+    plt.semilogx(
+        psi, gain_3 ,
+        "-g", label=f"BW = {param3.antenna_3_dB }º, gain = {param3.antenna_gain} dBi",
+    ) 
+    """
+
+    plt.ylim((-0.5, 56))
+    plt.xlim((0.1, 30))
+    plt.title("ITU-R S.672-4 antenna radiation pattern ($L_S = -20$ dB)")
+    plt.xlabel(r"off-axis angle [°]")
+    plt.ylabel("Gain [dBi]")
     plt.legend(loc="upper right")
 
+    #Ante3s do ponto
+    
     ax = plt.gca()
-    ax.set_yticks([-30, -20, -10, 0])
-    ax.set_xticks(
-        np.linspace(1, 9, 9).tolist() +
-        np.linspace(10, 100, 10).tolist(),
-    )
+    ax.set_yticks([0,10,20,30,40,50])
 
+    # Potências de 10 (0.1, 1, 10, 100)
+    ticks_potencias = np.logspace(-1, 2, 4)
+
+    # Marcações intermediárias (0.2, 0.3, ..., 0.9 e 2, 3, ..., 9)
+    ticks_intermediarios = np.concatenate([
+        np.linspace(0.2, 0.9, 8),  # Entre 0.1 e 1
+        np.linspace(2, 9, 8),      # Entre 1 e 10
+        np.linspace(20, 90, 8)     # Entre 10 e 100
+    ])
+
+    # Unir os dois conjuntos de ticks
+    xticks = np.concatenate([ticks_potencias, ticks_intermediarios])
+
+    # Definir os xticks no gráfico
+    ax.set_xticks(xticks)
+
+    #ax.set_xticks(np.logspace(-1, 2, 4))  # De 10^-1 até 10^2
     plt.grid()
     plt.show()

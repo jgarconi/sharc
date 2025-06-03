@@ -1,10 +1,10 @@
 general:
     ###########################################################################
     # Number of simulation snapshots
-    num_snapshots: 2500
+    num_snapshots: 1000
     ###########################################################################
     # IMT link that will be simulated (DOWNLINK or UPLINK)
-    imt_link: UPLINK
+    imt_link: DOWNLINK
     ###########################################################################
     # The chosen system for sharing study
     # EESS_PASSIVE, FSS_SS, FSS_ES, FS, RAS, SINGLE_EARTH_STATION
@@ -15,15 +15,15 @@ general:
     enable_adjacent_channel: false
     ###########################################################################
     # Seed for random number generator
-    seed: 696
+    seed: 45
     ###########################################################################
     # if FALSE, then a new output directory is created
     overwrite_output: FALSE
     # output destination folder - this is relative SHARC/sharc directory
-    output_dir  : campaigns/imt_micro_metsat_ss_8175MHz/output_ul/
+    output_dir  : campaigns/imt_micro_fss_ss_7950MHz/output_dl/
     ###########################################################################
     # output folder prefix
-    output_dir_prefix  : output_imt_metsat_ss_8175MHz_65long_ul
+    output_dir_prefix  : output_imt_fss_ss_7950MHz_dl
 
 imt:
     # Minimum 2D separation distance from BS to UE [m]
@@ -35,7 +35,7 @@ imt:
     interfered_with: FALSE
     # IMT center frequency [MHz]
     # NOTE: chosen to match satellite cochannel
-    frequency: 8195
+    frequency: 7950
     # IMT bandwidth [MHz]
     # NOTE: From Annex 4.2 to Doc 5D/413-E, Table 4
     bandwidth: 100
@@ -298,15 +298,15 @@ imt:
 # and extra info from satellite Electro-L N2
 # https://space.oscar.wmo.int/satellites/view/electro_l_n2
 single_space_station:
-  # NOTE: Chosen from Table 2-1 (Portela)
-  frequency: 8195
-  # NOTE: Chosen from Table 2-1 (Portela)
-  bandwidth: 32
+  # NOTE: Table 4 Annex 40 to Document 4A/343-E
+  frequency: 7950
+  # NOTE: Table 4 Annex 40 to Document 4A/343-E
+  bandwidth: 40
   # tx power density just so simulator runs
   # NOTE: assumed
   tx_power_density: -200
   # also just so simulator runs
-  # NOTE: Chosen from Table 2-1 (Portela)
+  # NOTE: Table 4 Annex 40 to Document 4A/343-E
   noise_temperature: 500
   # NOTE: Chosen from Annex 4.11 to Document 5D/413-E Section 5.2
   # – ITU-R P.619
@@ -322,7 +322,6 @@ single_space_station:
     ###########################################################################
     # earth station altitude [meters]
     # NOTE: Porto Alegre do Norte, MT (-10.871349,-51.6424333)
-    # VERIFY why we're not using 205 m
     es_altitude: 1200
     ###########################################################################
     # earth station lat long [deg]
@@ -355,10 +354,10 @@ single_space_station:
       pattern: ITU-R S.672
       ###########################################################################
       # Station peak receive antenna gain [dBi]
-      # NOTE: Chosen from Table 2-1 (Portela)
-      gain: 36
+      # NOTE: Table 4 Annex 40 to Document 4A/343-E
+      gain: 30
       itu_r_s_672:
-        # NOTE: Chosen from Table 2-1 (Portela)
-        antenna_3_dB: 6
-        # NOTE: Considering the worst case
+        # NOTE: Table 4 Annex 40 to Document 4A/343-E
+        antenna_3_dB: 5.4
+        # NOTE: Table 4 Annex 40 to Document 4A/343-E
         antenna_l_s: -20

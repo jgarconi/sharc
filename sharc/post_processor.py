@@ -360,13 +360,27 @@ class PostProcessor:
             attr_names = res.get_relevant_attributes()
 
             next_tick = 1
-            ticks_at = []
-            while next_tick > cutoff_percentage:
-                ticks_at.append(next_tick)
-                next_tick /= 10
-            ticks_at.append(cutoff_percentage)
-            ticks_at.reverse()
+            ticks_major = []
+            ticks_minor = []
 
+            current_tick = next_tick
+            while current_tick > cutoff_percentage:
+                ticks_major.append(current_tick)
+                # Generate minor ticks for the current major interval:
+                # They range from 10% to 90% of the current major value (step 10%)
+                minor_ticks_for_interval = [current_tick * i for i in np.arange(1, .1, -0.1)]
+                ticks_minor.extend(minor_ticks_for_interval)
+                
+                # Divide the current major tick by 10 for the next iteration
+                current_tick /= 10  
+
+            ticks_major.append(cutoff_percentage)
+            ticks_major.reverse()
+            ticks_minor.append(cutoff_percentage)
+            ticks_minor.reverse()
+            # Create tick labels so that only major ticks are labeled
+            all_ticks = np.sort(np.unique(np.concatenate((ticks_major, ticks_minor))))
+            ticktext = [str(tick) if tick in ticks_major else "" for tick in all_ticks]
             for attr_name in attr_names:
                 attr_val = getattr(res, attr_name)
                 if not len(attr_val):
@@ -388,10 +402,53 @@ class PostProcessor:
                         title=f'CCDF Plot for {attr_plot_info["title"]}',
                         xaxis_title=attr_plot_info["x_label"],
                         yaxis_title="$\\text{P } I > X$",
-                        yaxis=dict(tickmode="array", tickvals=ticks_at, type="log", range=[np.log10(cutoff_percentage), 0]),
-                        xaxis=dict(tickmode="linear", dtick=5),
-                        legend_title="Labels",
+                        yaxis=dict(tickmode="array", tickvals=all_ticks, type="log",
+                                   range=[np.log10(cutoff_percentage-cutoff_percentage/4), 0],
+                                   ticktext=ticktext,
+                                   gridcolor="lightgray",
+                                   gridwidth=.5,
+                                   griddash="dot"
+                                   ),
+                        xaxis=dict(tickmode="linear",
+                                   dtick=5,
+                                   gridcolor="lightgray",
+                                   gridwidth=.5,
+                                   griddash="dot"
+                                   ),
+                        # legend_title="Labels",
                         meta={"related_results_attribute": attr_name, "plot_type": "ccdf"},
+                        plot_bgcolor="white",
+                        paper_bgcolor="white",
+                        font=dict(
+                            family="Arial, sans-serif",
+                            size=16,         # Base font size for all text
+                            color="black"    # Text color
+                        ),
+                        shapes=[
+                            dict(
+                                type="rect",
+                                xref="paper",
+                                yref="paper",
+                                x0=0,
+                                y0=cutoff_percentage,
+                                x1=1,
+                                y1=1,
+                                line=dict(
+                                    color="black",
+                                    width=1
+                                ),
+                                fillcolor="rgba(0,0,0,0)"  # transparent fill
+                            )
+                        ],
+                        legend=dict(
+                            x=0.38,          # x position (95% from the left)
+                            y=0.3,          # y position (95% from the bottom)
+                            xanchor='right', # anchor the legend's right side at x=0.95
+                            yanchor='top',   # anchor the legend's top at y=0.95
+                            bgcolor='rgba(255,255,255,0.5)',  # Optional: semi-transparent white background
+                            bordercolor='rgba(217,217,217,1)',              # Optional: border color for better separation
+                            borderwidth=1                     # Optional: border width in pixels
+                        )
                     )
 
                 # TODO: take this fn as argument, to plot more than only cdf's
@@ -462,6 +519,7 @@ class PostProcessor:
         ul_tdd_factor: float,
         n_bs_sim: int,
         n_bs_actual: int,
+        n_drops: int,
         random_number_gen=np.random.RandomState(31),
     ):
         """
@@ -501,7 +559,8 @@ class PostProcessor:
         elif dl_tdd_factor == 0:
             n_aggregate = len(ul_samples)
         else:
-            n_aggregate = min(len(ul_samples), len(dl_samples))
+            # n_aggregate = min(len(ul_samples), len(dl_samples))
+            n_aggregate = n_drops
 
         aggregate_samples = np.empty(n_aggregate)
 

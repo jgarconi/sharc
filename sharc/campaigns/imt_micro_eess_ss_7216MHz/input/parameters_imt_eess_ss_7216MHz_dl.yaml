@@ -1,10 +1,10 @@
 general:
     ###########################################################################
     # Number of simulation snapshots
-    num_snapshots: 2500
+    num_snapshots: 1500
     ###########################################################################
     # IMT link that will be simulated (DOWNLINK or UPLINK)
-    imt_link: UPLINK
+    imt_link: DOWNLINK
     ###########################################################################
     # The chosen system for sharing study
     # EESS_PASSIVE, FSS_SS, FSS_ES, FS, RAS, SINGLE_EARTH_STATION
@@ -15,15 +15,15 @@ general:
     enable_adjacent_channel: false
     ###########################################################################
     # Seed for random number generator
-    seed: 696
+    seed: 42
     ###########################################################################
     # if FALSE, then a new output directory is created
     overwrite_output: FALSE
     # output destination folder - this is relative SHARC/sharc directory
-    output_dir  : campaigns/imt_micro_metsat_ss_8175MHz/output_ul/
+    output_dir  : campaigns/imt_micro_eess_ss_7216MHz/output_dl/
     ###########################################################################
     # output folder prefix
-    output_dir_prefix  : output_imt_metsat_ss_8175MHz_65long_ul
+    output_dir_prefix  : output_imt_eess_ss_7216MHz_dl
 
 imt:
     # Minimum 2D separation distance from BS to UE [m]
@@ -34,8 +34,8 @@ imt:
     #   FALSE : IMT generates interference
     interfered_with: FALSE
     # IMT center frequency [MHz]
-    # NOTE: chosen to match satellite cochannel
-    frequency: 8195
+    # NOTE: chosen to match satellite cochannel 
+    frequency: 7216.6
     # IMT bandwidth [MHz]
     # NOTE: From Annex 4.2 to Doc 5D/413-E, Table 4
     bandwidth: 100
@@ -64,11 +64,10 @@ imt:
         # Macrocell Topology parameters. Relevant when imt.topology.type == "MACROCELL"
         hotspot:
             # Inter-site distance in macrocell network topology [m]
-            # NOTE: Since we need to cover the Brazil area of A = 8.510.000 km^2
-            # ISD = 3 * sqrt ( 2 * A / (7 * 19 * 3 * 3* sqrt (3))), 
-            # considering an 7 clusters topology
-            # ISD = 271815.14 verify why Judson has chosen 271907.22
-            intersite_distance: 271907.22
+            # NOTE: Since we need to cover the US area of A = 9.867.000 km^2
+            # ISD = (2 * sqrt(A/pi))/(12.11), considering an 7 clusters topology
+            # ISD BRASIL 
+            intersite_distance: 271907.225714178
             # Enable wrap around.
             wrap_around: true
             # Number of clusters in macro cell topology
@@ -79,6 +78,7 @@ imt:
             ###########################################################################
             # Maximum 2D distance between hotspot and UE [m]
             # This is the hotspot radius
+            # NOTE: check this value (Anatel)
             max_dist_hotspot_ue: 100
             ###########################################################################
             # Minimum 2D distance between macro cell base station and hotspot [m]
@@ -298,67 +298,64 @@ imt:
 # and extra info from satellite Electro-L N2
 # https://space.oscar.wmo.int/satellites/view/electro_l_n2
 single_space_station:
-  # NOTE: Chosen from Table 2-1 (Portela)
-  frequency: 8195
-  # NOTE: Chosen from Table 2-1 (Portela)
-  bandwidth: 32
-  # tx power density just so simulator runs
-  # NOTE: assumed
-  tx_power_density: -200
-  # also just so simulator runs
-  # NOTE: Chosen from Table 2-1 (Portela)
-  noise_temperature: 500
-  # NOTE: Chosen from Annex 4.11 to Document 5D/413-E Section 5.2
-  # – ITU-R P.619
-  #     Prediction procedure for the evaluation of interference between stations on
-  #     the surface of the Earth at frequencies above about 0.1 GHz
-  channel_model: P619
-  season: SUMMER
-  percent_clutter: 1
+    # NOTE: Chosen from Table 2-1 (Portela)
+    frequency: 7216.6
+    # NOTE: Chosen from Table 2-1 (Portela)
+    bandwidth: 10.9
+    # tx power density just so simulator runs
+    # NOTE: assumed
+    tx_power_density: -200
+    # also just so simulator runs
+    # NOTE: Chosen from Table 2-1 (Portela)
+    noise_temperature: 1073
+    # NOTE: Chosen from Annex 4.11 to Document 5D/413-E Section 5.2
+    # – ITU-R P.619
+    #     Prediction procedure for the evaluation of interference between stations on
+    #     the surface of the Earth at frequencies above about 0.1 GHz
+    channel_model: P619
+    season: SUMMER
+    percent_clutter: 1
 
-  geometry:
-    # Sat altitude
-    altitude: 35786000
-    ###########################################################################
-    # earth station altitude [meters]
-    # NOTE: Porto Alegre do Norte, MT (-10.871349,-51.6424333)
-    # VERIFY why we're not using 205 m
-    es_altitude: 1200
-    ###########################################################################
-    # earth station lat long [deg]
-    es_lat_deg: -10.871349
-    ###########################################################################
-    # earth station lat long [deg]
-    es_long_deg: -51.6424333
-    # Azimuth angle
-    azimuth:
-      # Type of elevation. May be "FIXED" or "POINTING_AT_IMT"
-      type: POINTING_AT_IMT
-    # Elevation angle [degrees]
-    # Is not elevation at ground, is elevation for satellite antenna pointing
-    elevation:
-      # Type of elevation. May be "FIXED" or "POINTING_AT_IMT"
-      type: POINTING_AT_IMT
-    # Station 2d location [meters]:
-    location:
-      type: FIXED
-      fixed:
-        lat_deg: 0
-        # Satellite: https://www.satbeams.com/satellites?norad=41382
-        long_deg: -65
-  antenna:
-      ###########################################################################
-      # Choose the antenna pattern. Can be one of:
-      # "OMNI", "ITU-R F.699", "ITU-R S.465", "ITU-R S.580", "MODIFIED ITU-R S.465",
-      # "ITU-R S.1855", "ITU-R S.672"
-      # since 20deg beamwidth would already cover every area
-      pattern: ITU-R S.672
-      ###########################################################################
-      # Station peak receive antenna gain [dBi]
-      # NOTE: Chosen from Table 2-1 (Portela)
-      gain: 36
-      itu_r_s_672:
-        # NOTE: Chosen from Table 2-1 (Portela)
-        antenna_3_dB: 6
-        # NOTE: Considering the worst case
-        antenna_l_s: -20
+    geometry:
+            # Sat altitude
+            altitude: 35786000
+            ###########################################################################
+            # earth station altitude [meters]
+            # Seems like a good enough approx. since
+            # Most of Brazil's altitude is already below 900m, with Brasília at 1200m
+            # and Brazil already makes for half of South America territory
+            es_altitude: 1200
+            ###########################################################################
+            # earth station lat long [deg]
+            es_lat_deg: -10.871349
+            ###########################################################################
+            # earth station lat long [deg]
+            es_long_deg: -51.6424333
+            # Azimuth angle
+            azimuth:
+                # Type of elevation. May be "FIXED" or "POINTING_AT_IMT"
+                type: POINTING_AT_IMT
+            # Elevation angle [degrees]
+            # Is not elevation at ground, is elevation for satellite antenna pointing
+            elevation:
+                # Type of elevation. May be "FIXED" or "POINTING_AT_IMT"
+                type: POINTING_AT_IMT
+            # Station 2d location [meters]:
+            location:
+                type: FIXED
+                fixed:
+                    #----------->Centro do Brasil
+                    lat_deg: 0
+                    long_deg: -65
+    antenna:
+        ###########################################################################
+        # Choose the antenna pattern. Can be one of:
+        # "OMNI", "ITU-R F.699", "ITU-R S.465", "ITU-R S.580", "MODIFIED ITU-R S.465",
+        # "ITU-R S.1855", "ITU-R S.672"
+        pattern: ITU-R S.672
+        ###########################################################################
+        # Station peak receive antenna gain [dBi]
+        gain: 35.3
+        itu_r_s_672:
+            antenna_3_dB: 3.3
+            antenna_l_s: -20

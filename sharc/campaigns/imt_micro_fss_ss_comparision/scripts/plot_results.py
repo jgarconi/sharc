@@ -27,27 +27,32 @@ def legend_gen(dir_name):
     else:
         return "None"
     
-    return f"{link.upper()}"
+    bw = re.search("_(stationD|stationJ)", dir_name)
+    if bw is not None:
+        bw = bw.group(1)
+        if bw == "stationD":
+            bw = "Station D"
+        elif bw == "stationJ":
+            bw = "Station J"
+    else:
+        return "None"
+    return f"{link.upper()} - {bw}"
 
 post_processor.add_plot_legend_generator(legend_gen)
 
 # Atributos a serem plotados
 attributes_to_plot = [
-    #"system_imt_antenna_gain",
-    #"imt_system_path_loss",
-    #"imt_system_antenna_gain",
-    "system_dl_interf_power_per_mhz",
-    "system_ul_interf_power_per_mhz",
+    "system_inr"
 ]
 
 # Carrega os resultados para diferentes cenários
 dl_urban_results = Results.load_many_from_dir(
-    dl_dir, only_latest=True,
+    dl_dir, only_latest=False,
     only_samples=attributes_to_plot
 )
 
 ul_urban_results = Results.load_many_from_dir(
-    ul_dir, only_latest=True,
+    ul_dir, only_latest=False,
     only_samples=attributes_to_plot
 )
 
@@ -57,18 +62,9 @@ all_results = [
     *ul_urban_results,
 ]
 
-#print(all_results)
-
-# transforming dBm / MHz to dB / kHz
-# dBm -> dB means -30
-# /MHz -> /kHz means -30
+# Converte os valores de INR para SampleList
 for result in all_results:
-    result.system_dl_interf_power_per_mhz = SampleList(
-        np.array(result.system_dl_interf_power_per_mhz) - 30 - 30
-    )
-    result.system_ul_interf_power_per_mhz = SampleList(
-        np.array(result.system_ul_interf_power_per_mhz) - 30 - 30
-    )
+    result.system_inr = SampleList(np.array(result.system_inr))
 
 # Adiciona os resultados ao pós-processador
 post_processor.add_results(all_results)
@@ -77,7 +73,7 @@ post_processor.add_results(all_results)
 post_processor.add_plots(
     post_processor.generate_ccdf_plots_from_results(
         all_results,
-        cutoff_percentage=0.001
+        cutoff_percentage=0.0001
     )
 )
 
@@ -89,13 +85,16 @@ post_processor.add_plots(
 
 # Lista de atributos para adicionar linhas de critério de proteção
 plots_to_add_vline = [
-    "system_ul_interf_power_per_mhz",
-    "system_dl_interf_power_per_mhz"
+    "system_inr",
+    # "imt_ul_inr",
+    # "imt_dl_inr",
 ]
 
 # Critérios de proteção: linha horizontal, linha vertical, estilo tracejado
 interf_protection_criteria = {
-    "Protection criterion [-161 dBW/kHz, 0.1%]": [0.001, -161, "dash"]
+    "Protection criterion [-6 dB, 0.03%]": [0.0003, -6, "dash", "gray"],
+    "Protection criterion [-7 dB, 0.1%]": [0.001, -7, "dot", "gray"],
+    "Protection criterion [-10.5 dB, 20%]": [0.2, -10.5, "dashdot", "gray"]
 }
 
 def add_protection_criteria(fig: go.Figure, interf_protection_criteria: dict) -> go.Figure:
@@ -113,7 +112,7 @@ def add_protection_criteria(fig: go.Figure, interf_protection_criteria: dict) ->
                 x=[val_crite[1], val_crite[1]],
                 y=[0, 1],
                 mode='lines',
-                line=dict(dash=val_crite[2], color="black"),
+                line=dict(dash=val_crite[2], color=val_crite[3]),
                 name=legend_crite,
                 showlegend=True
             )
@@ -124,7 +123,7 @@ def add_protection_criteria(fig: go.Figure, interf_protection_criteria: dict) ->
             fig.add_hline(
                 y=val_crite[0],
                 line_dash=val_crite[2],
-                line_color="black",
+                line_color=val_crite[3],
             )
 
     return fig
@@ -145,6 +144,26 @@ def adjust_range_x(fig: go.Figure) -> go.Figure:
 
     return fig
 
+def legend_result(result: Results, pos_cenario: int = 2):
+    """
+    Retorna a string com a parte relevante da legenda.
+
+    Parâmetros:
+    - result : Results -> Objeto de resultados.
+    - pos_cenario : int -> Índice da posição onde está a informação relevante na legenda.
+      O padrão é 2, pois geralmente a informação importante para o cenário está na terceira posição
+      da string gerada (por exemplo: 'Link Urbano/Suburbano diferença_cenario').
+
+    Retorna:
+    - Parte relevante da legenda como string.
+    """
+    # Usando o método que encontra as possíveis legendas atribuídas a esse resultado
+    legends = post_processor.get_results_possible_legends(result)
+    # print(list(legends[0].values())[0].split())
+    
+    # Supondo que a legenda está separada por espaços
+    return list(legends[0].values())[0].split()[pos_cenario]
+
 # Adiciona critérios de proteção aos gráficos selecionados
 for prop_name in plots_to_add_vline:
     for plot_type in ["cdf", "ccdf"]:
@@ -154,19 +173,18 @@ for prop_name in plots_to_add_vline:
             plt = adjust_range_x(plt)
 
 # Gera gráficos agregados para interferencia
-system_dl_interf_power_plot = post_processor.get_plot_by_results_attribute_name("system_dl_interf_power_per_mhz")
-system_ul_interf_power_plot = post_processor.get_plot_by_results_attribute_name("system_ul_interf_power_per_mhz")
+system_inr_plot = post_processor.get_plot_by_results_attribute_name("system_inr")
 
 aggregated_plot = go.Figure()
 aggregated_ccdf_plot = go.Figure()
 
-if system_ul_interf_power_plot and system_dl_interf_power_plot:
-    cutoff_percentage = 0.001
+if system_inr_plot:
+    cutoff_percentage = 0.0001
     next_tick = 1
     ticks_major = []
     ticks_minor = []
-
     current_tick = next_tick
+
     while current_tick > cutoff_percentage:
         ticks_major.append(current_tick)
         # Generate minor ticks for the current major interval:
@@ -181,26 +199,27 @@ if system_ul_interf_power_plot and system_dl_interf_power_plot:
     ticks_major.reverse()
     ticks_minor.append(cutoff_percentage)
     ticks_minor.reverse()
-            # Create tick labels so that only major ticks are labeled
+    
+    # Create tick labels so that only major ticks are labeled
     all_ticks = np.sort(np.unique(np.concatenate((ticks_major, ticks_minor))))
     ticktext = [str(tick) if tick in ticks_major else "" for tick in all_ticks]
 
-    aggregated_plot.update_layout(
-                        title=f'Aggregated CDF Plot for system receveid interference from Micro IMT in 8175 MHz',
-                        xaxis_title="Interference Power [dBm/MHz]",
-                        yaxis_title="$\\text{P } (X > x)$",
-                        yaxis=dict(tickmode="array", tickvals=[0, 0.25, 0.5, 0.75, 1]),
-                        xaxis=dict(tickmode="linear", dtick=5),
-                        legend_title="Labels",
-                        meta={"plot_type": "cdf"},
-                    )
+    # aggregated_plot.update_layout(
+    #                     title=f'Comparison of aggregated CDF Plot for FSS Space Station INR at 7962.5 MHz (BW = 17.2º) and at 7950 MHz (BW = 5.4º)',
+    #                     xaxis_title="INR [dB]",
+    #                     yaxis_title="$\\text{P } (X > x)$",
+    #                     yaxis=dict(tickmode="array", tickvals=[0, 0.25, 0.5, 0.75, 1]),
+    #                     xaxis=dict(tickmode="linear", dtick=5),
+    #                     legend_title="Labels",
+    #                     meta={"related_results_attribute": "Aggregated", "plot_type": "cdf"},
+    #                 )
     
     aggregated_ccdf_plot.update_layout(
-                        # title=f'Aggregated CCDF Plot for MetSat Space Station receveid interference from Micro IMT in 8175 MHz',
-                        xaxis_title="Interference Power [dBm/MHz]",
+                        # title=f'Comparison of aggregated CCDF Plot for FSS Space Station INR at 7962.5 MHz (BW = 17.2º) and at 7950 MHz (BW = 5.4º)',
+                        xaxis_title="INR [dB]",
                         yaxis_title="$\\text{P } I > X$",
                         yaxis=dict(tickmode="array", tickvals=all_ticks, type="log",
-                                   range=[np.log10(cutoff_percentage-cutoff_percentage/4), 0],
+                                   range=[np.log10(cutoff_percentage), 0],
                                    ticktext=ticktext,
                                    gridcolor="lightgray",
                                    gridwidth=.5,
@@ -238,8 +257,8 @@ if system_ul_interf_power_plot and system_dl_interf_power_plot:
                             )
                         ],
                         legend=dict(
-                            x=0.95,          # x position (95% from the left)
-                            y=0.95,          # y position (95% from the bottom)
+                            x=0.9,          # x position (95% from the left)
+                            y=0.8,          # y position (95% from the bottom)
                             xanchor='right', # anchor the legend's right side at x=0.95
                             yanchor='top',   # anchor the legend's top at y=0.95
                             bgcolor='rgba(255,255,255,0.5)',  # Optional: semi-transparent white background
@@ -248,68 +267,51 @@ if system_ul_interf_power_plot and system_dl_interf_power_plot:
                         )
                     )
 
-   # Acessa os resultados diretamente
-    dl_urb_r = dl_urban_results[0]
-    ul_urb_r = ul_urban_results[0]
-
-    if None in [dl_urb_r, ul_urb_r]:
-        raise Exception("Cannot aggregate results")
-
-    n_bs_sim = 19 * 3 * 3 * 7
-    area = 8515767  # Área do Brasil em km²
-
-    # NOTE: From Table 13 Annex 4.15 for micro cells
-    ra_urban = np.array([.05, .1])  # ra1, ra2 urbano micro
-    rb = np.array([.01, .05]) if area < 3500000 else np.array([.01, .03])
-
-    legenda = "Ra2Rb1"
-    
-    # Deployment density for IMT BS (BS/km²)
-    # NOTE: From Table 13 Annex 4.15 for micro cells
-    ds_urb = 30
-
-    for i in range(1):
-        n_bs_actual_urban = int(area * ds_urb * ra_urban[i] * rb[i])
-
-        aggregated_results_ra1rb1 = PostProcessor.aggregate_results(
-            dl_samples=dl_urb_r.system_dl_interf_power_per_mhz,
-            ul_samples=ul_urb_r.system_ul_interf_power_per_mhz,
-            ul_tdd_factor=0.25,
-            n_bs_sim=n_bs_sim,
-            n_bs_actual=166500,
-            n_drops=10000
-        )
-
-        aggregated_results_ra2rb1 = PostProcessor.aggregate_results(
-            dl_samples=dl_urb_r.system_dl_interf_power_per_mhz,
-            ul_samples=ul_urb_r.system_ul_interf_power_per_mhz,
-            ul_tdd_factor=0.25,
-            n_bs_sim=n_bs_sim,
-            n_bs_actual=303310,
-            n_drops=10000
-        )
-
-        #Para o micro existe apenas o Urbano 
-        # aggregated_results = aggregated_results_urb
-
-        # x, y = PostProcessor.cdf_from(aggregated_results)
-        # aggregated_plot.add_trace(
-        #     go.Scatter(x=x, y=y, mode='lines', name=legenda),
-        # )
-
-        x, y = PostProcessor.ccdf_from(aggregated_results_ra1rb1)
-        aggregated_ccdf_plot.add_trace(
-            go.Scatter(x=x, y=y, mode='lines', name="Ra1Rb1"),
-        )
+    #Cada um dos cenarios 
+    for dl_urb_r in dl_urban_results:
         
-        x, y = PostProcessor.ccdf_from(aggregated_results_ra2rb1)
-        aggregated_ccdf_plot.add_trace(
-            go.Scatter(x=x, y=y, mode='lines', name="Ra2Rb1"),
+        #Encontrando qual os resultados do cenario atual que esta em dl_urb_r
+            
+        legenda = legend_result(dl_urb_r,3)
+        
+        for ul_urb_r in ul_urban_results:
+            if legenda ==  legend_result(ul_urb_r):
+                break
+        
+        #Detalhes especificos da legenda final a ser exibida no grafico
+        legenda = f"- {legenda}"
+
+        if None in [dl_urb_r, ul_urb_r]:
+            raise Exception("Cannot aggregate results")
+
+
+        # Parece que o calculo mudou depois rever o calculo ( por equanto uso o valor de BS's caçculadas externamente)
+        n_bs_sim = 19 * 3 * 3 * 7 #1179 
+
+        #Caso especifico apenas Ra2Rb1
+        n_bs_actual_urban = 303310
+
+        aggregated_results = PostProcessor.aggregate_results(
+            dl_samples=dl_urb_r.system_inr,
+            ul_samples=ul_urb_r.system_inr,
+            ul_tdd_factor=0.25,
+            n_bs_sim=n_bs_sim,
+            n_bs_actual=n_bs_actual_urban,
+            n_drops=100000
         )
 
-    # aggregated_plot = add_protection_criteria(aggregated_plot, interf_protection_criteria)
+        x, y = PostProcessor.cdf_from(aggregated_results)
+        aggregated_plot.add_trace(
+            go.Scatter(x=x, y=y, mode='lines', name=legenda),
+        )
+
+        x, y = PostProcessor.ccdf_from(aggregated_results)
+        aggregated_ccdf_plot.add_trace(
+            go.Scatter(x=x, y=y, mode='lines', name=legenda),
+        )
+    aggregated_plot = add_protection_criteria(aggregated_plot, interf_protection_criteria)
     aggregated_ccdf_plot = add_protection_criteria(aggregated_ccdf_plot, interf_protection_criteria)
-    # aggregated_plot = adjust_range_x(aggregated_plot)
+    aggregated_plot = adjust_range_x(aggregated_plot)
     aggregated_ccdf_plot = adjust_range_x(aggregated_ccdf_plot)
 
 plots = [*post_processor.plots, aggregated_plot, aggregated_ccdf_plot]
@@ -317,7 +319,7 @@ plots = [*post_processor.plots, aggregated_plot, aggregated_ccdf_plot]
 PostProcessor.save_plots(
     os.path.join(campaign_base_dir, "output"),
     plots,
-    width=1200, height=800,
+    width=1300, height=900,
 )
 
 # for plot in plots:

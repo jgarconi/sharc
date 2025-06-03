@@ -1,7 +1,7 @@
 general:
     ###########################################################################
     # Number of simulation snapshots
-    num_snapshots: 1500
+    num_snapshots: 2500
     ###########################################################################
     # IMT link that will be simulated (DOWNLINK or UPLINK)
     imt_link: DOWNLINK
@@ -15,7 +15,7 @@ general:
     enable_adjacent_channel: false
     ###########################################################################
     # Seed for random number generator
-    seed: 47
+    seed: 696
     ###########################################################################
     # if FALSE, then a new output directory is created
     overwrite_output: FALSE

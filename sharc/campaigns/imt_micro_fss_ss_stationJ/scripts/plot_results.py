@@ -14,6 +14,9 @@ campaign_base_dir = str((Path(__file__) / ".." / "..").resolve())
 dl_dir = os.path.join(campaign_base_dir, "output_dl")
 ul_dir = os.path.join(campaign_base_dir, "output_ul")
 
+dl_comp_dir = os.path.join(campaign_base_dir, "output_50k_drops")
+ul_comp_dir = os.path.join(campaign_base_dir, "output_50k_drops")
+
 # Inicializa o pós-processador
 post_processor = PostProcessor()
 
@@ -27,48 +30,81 @@ def legend_gen(dir_name):
     else:
         return "None"
     
-    return f"{link.upper()}"
+    beam = re.search("_(small|large)", dir_name)
+    if beam is not None:
+        beam = beam.group(1)
+    else:
+        return "None"
+    
+    return f"{link.upper()} - {beam.upper()} BEAM"
 
 post_processor.add_plot_legend_generator(legend_gen)
 
 # Atributos a serem plotados
 attributes_to_plot = [
-    #"system_imt_antenna_gain",
-    #"imt_system_path_loss",
-    #"imt_system_antenna_gain",
-    "system_dl_interf_power_per_mhz",
-    "system_ul_interf_power_per_mhz",
+    # "system_inr",
+    # "imt_ul_inr",
+    # "imt_dl_inr",
+    "imt_system_path_loss",
+    # "system_imt_antenna_gain",
+    # "imt_system_antenna_gain"
 ]
 
+# Função para filtrar resultados com base no tipo de ambiente (urbano/suburbano)
+def filter_fn(result_dir: str, is_small: bool) -> bool:
+    beam = "_small" if is_small else "_large"
+    return beam in result_dir
+
 # Carrega os resultados para diferentes cenários
-dl_urban_results = Results.load_many_from_dir(
+dl_large_beam = Results.load_many_from_dir(
     dl_dir, only_latest=True,
-    only_samples=attributes_to_plot
+    only_samples=attributes_to_plot,
+    filter_fn=lambda x: filter_fn(x, False)
 )
 
-ul_urban_results = Results.load_many_from_dir(
+ul_large_beam = Results.load_many_from_dir(
     ul_dir, only_latest=True,
-    only_samples=attributes_to_plot
+    only_samples=attributes_to_plot,
+    filter_fn=lambda x: filter_fn(x, False)
+)
+
+dl_small_beam = Results.load_many_from_dir(
+    dl_dir, only_latest=True,
+    only_samples=attributes_to_plot,
+    filter_fn=lambda x: filter_fn(x, True)
+)
+
+ul_small_beam = Results.load_many_from_dir(
+    ul_dir, only_latest=True,
+    only_samples=attributes_to_plot,
+    filter_fn=lambda x: filter_fn(x, True)
+)
+
+def filter_fn(result_dir: str, is_small: bool) -> bool:
+    beam = "_dl" if is_small else "_ul"
+    return beam in result_dir
+
+dl_completo = Results.load_many_from_dir(
+    dl_comp_dir, only_latest=True,
+    only_samples=attributes_to_plot,
+    filter_fn=lambda x: filter_fn(x, True)
+)
+
+ul_completo = Results.load_many_from_dir(
+    ul_comp_dir, only_latest=True,
+    only_samples=attributes_to_plot,
+    filter_fn=lambda x: filter_fn(x, False)
 )
 
 # Combina todos os resultados em uma única lista
 all_results = [
-    *dl_urban_results,
-    *ul_urban_results,
+    *dl_large_beam,
+    *ul_large_beam,
+    *dl_small_beam,
+    *ul_small_beam,
+    *dl_completo,
+    *ul_completo,
 ]
-
-#print(all_results)
-
-# transforming dBm / MHz to dB / kHz
-# dBm -> dB means -30
-# /MHz -> /kHz means -30
-for result in all_results:
-    result.system_dl_interf_power_per_mhz = SampleList(
-        np.array(result.system_dl_interf_power_per_mhz) - 30 - 30
-    )
-    result.system_ul_interf_power_per_mhz = SampleList(
-        np.array(result.system_ul_interf_power_per_mhz) - 30 - 30
-    )
 
 # Adiciona os resultados ao pós-processador
 post_processor.add_results(all_results)
@@ -77,7 +113,7 @@ post_processor.add_results(all_results)
 post_processor.add_plots(
     post_processor.generate_ccdf_plots_from_results(
         all_results,
-        cutoff_percentage=0.001
+        cutoff_percentage=0.0001
     )
 )
 
@@ -89,13 +125,14 @@ post_processor.add_plots(
 
 # Lista de atributos para adicionar linhas de critério de proteção
 plots_to_add_vline = [
-    "system_ul_interf_power_per_mhz",
-    "system_dl_interf_power_per_mhz"
+    "system_inr"
 ]
 
 # Critérios de proteção: linha horizontal, linha vertical, estilo tracejado
 interf_protection_criteria = {
-    "Protection criterion [-161 dBW/kHz, 0.1%]": [0.001, -161, "dash"]
+    "Protection criterion [-6 dB, 0.03%]": [0.0003, -6, "dash", "gray"],
+    "Protection criterion [-7 dB, 0.1%]": [0.001, -7, "dot", "gray"],
+    "Protection criterion [-10.5 dB, 20%]": [0.2, -10.5, "dashdot", "gray"]
 }
 
 def add_protection_criteria(fig: go.Figure, interf_protection_criteria: dict) -> go.Figure:
@@ -113,7 +150,7 @@ def add_protection_criteria(fig: go.Figure, interf_protection_criteria: dict) ->
                 x=[val_crite[1], val_crite[1]],
                 y=[0, 1],
                 mode='lines',
-                line=dict(dash=val_crite[2], color="black"),
+                line=dict(dash=val_crite[2], color=val_crite[3]),
                 name=legend_crite,
                 showlegend=True
             )
@@ -124,7 +161,7 @@ def add_protection_criteria(fig: go.Figure, interf_protection_criteria: dict) ->
             fig.add_hline(
                 y=val_crite[0],
                 line_dash=val_crite[2],
-                line_color="black",
+                line_color=val_crite[3],
             )
 
     return fig
@@ -154,14 +191,14 @@ for prop_name in plots_to_add_vline:
             plt = adjust_range_x(plt)
 
 # Gera gráficos agregados para interferencia
-system_dl_interf_power_plot = post_processor.get_plot_by_results_attribute_name("system_dl_interf_power_per_mhz")
-system_ul_interf_power_plot = post_processor.get_plot_by_results_attribute_name("system_ul_interf_power_per_mhz")
+system_dl_inr_plot = post_processor.get_plot_by_results_attribute_name("system_inr")
+system_ul_inr_plot = post_processor.get_plot_by_results_attribute_name("system_inr")
 
 aggregated_plot = go.Figure()
 aggregated_ccdf_plot = go.Figure()
 
-if system_ul_interf_power_plot and system_dl_interf_power_plot:
-    cutoff_percentage = 0.001
+if system_ul_inr_plot and system_dl_inr_plot:
+    cutoff_percentage = 0.0001
     next_tick = 1
     ticks_major = []
     ticks_minor = []
@@ -185,8 +222,13 @@ if system_ul_interf_power_plot and system_dl_interf_power_plot:
     all_ticks = np.sort(np.unique(np.concatenate((ticks_major, ticks_minor))))
     ticktext = [str(tick) if tick in ticks_major else "" for tick in all_ticks]
 
+    # Create tick labels so that only major ticks are labeled
+    all_ticks = np.sort(np.unique(np.concatenate((ticks_major, ticks_minor))))
+    ticktext = [f'10<sup><span style="font-size: 1.2em;">{int(np.floor(np.log10(tick)))}</span></sup>' if tick in ticks_major else "" for tick in all_ticks]
+
+
     aggregated_plot.update_layout(
-                        title=f'Aggregated CDF Plot for system receveid interference from Micro IMT in 8175 MHz',
+                        title=f'Aggregated CDF Plot for system Station J receveid interference from Micro IMT at 8150 MHz',
                         xaxis_title="Interference Power [dBm/MHz]",
                         yaxis_title="$\\text{P } (X > x)$",
                         yaxis=dict(tickmode="array", tickvals=[0, 0.25, 0.5, 0.75, 1]),
@@ -196,11 +238,11 @@ if system_ul_interf_power_plot and system_dl_interf_power_plot:
                     )
     
     aggregated_ccdf_plot.update_layout(
-                        # title=f'Aggregated CCDF Plot for MetSat Space Station receveid interference from Micro IMT in 8175 MHz',
-                        xaxis_title="Interference Power [dBm/MHz]",
+                        title=f'Aggregated CCDF Plot for system Station J receveid interference from Micro IMT at 8150 MHz',
+                        xaxis_title="INR [dB]",
                         yaxis_title="$\\text{P } I > X$",
                         yaxis=dict(tickmode="array", tickvals=all_ticks, type="log",
-                                   range=[np.log10(cutoff_percentage-cutoff_percentage/4), 0],
+                                   range=[np.log10(cutoff_percentage), 0],
                                    ticktext=ticktext,
                                    gridcolor="lightgray",
                                    gridwidth=.5,
@@ -212,7 +254,7 @@ if system_ul_interf_power_plot and system_dl_interf_power_plot:
                                    gridwidth=.5,
                                    griddash="dot"
                                    ),
-                        legend_title="Labels",
+                        # legend_title="Labels",
                         meta={"plot_type": "ccdf"},
                         plot_bgcolor="white",
                         paper_bgcolor="white",
@@ -238,8 +280,8 @@ if system_ul_interf_power_plot and system_dl_interf_power_plot:
                             )
                         ],
                         legend=dict(
-                            x=0.95,          # x position (95% from the left)
-                            y=0.95,          # y position (95% from the bottom)
+                            x=0.8,          # x position (95% from the left)
+                            y=0.8,          # y position (95% from the bottom)
                             xanchor='right', # anchor the legend's right side at x=0.95
                             yanchor='top',   # anchor the legend's top at y=0.95
                             bgcolor='rgba(255,255,255,0.5)',  # Optional: semi-transparent white background
@@ -247,12 +289,19 @@ if system_ul_interf_power_plot and system_dl_interf_power_plot:
                             borderwidth=1                     # Optional: border width in pixels
                         )
                     )
+    
 
    # Acessa os resultados diretamente
-    dl_urb_r = dl_urban_results[0]
-    ul_urb_r = ul_urban_results[0]
+    dl_large_r = dl_large_beam[0]
+    ul_large_r = ul_large_beam[0]
 
-    if None in [dl_urb_r, ul_urb_r]:
+    dl_small_r = dl_small_beam[0]
+    ul_small_r = ul_small_beam[0]
+
+    dl_r = dl_completo[0]
+    ul_r = ul_completo[0]
+
+    if None in [dl_large_r, ul_large_r, dl_small_r, ul_small_r]:
         raise Exception("Cannot aggregate results")
 
     n_bs_sim = 19 * 3 * 3 * 7
@@ -268,51 +317,100 @@ if system_ul_interf_power_plot and system_dl_interf_power_plot:
     # NOTE: From Table 13 Annex 4.15 for micro cells
     ds_urb = 30
 
-    for i in range(1):
-        n_bs_actual_urban = int(area * ds_urb * ra_urban[i] * rb[i])
+    aggregated_large_ra1rb1 = PostProcessor.aggregate_results(
+        dl_samples=dl_large_r.system_inr,
+        ul_samples=ul_large_r.system_inr,
+        ul_tdd_factor=0.25,
+        n_bs_sim=n_bs_sim,
+        n_bs_actual=142650,
+        n_drops=10000
+    )
 
-        aggregated_results_ra1rb1 = PostProcessor.aggregate_results(
-            dl_samples=dl_urb_r.system_dl_interf_power_per_mhz,
-            ul_samples=ul_urb_r.system_ul_interf_power_per_mhz,
-            ul_tdd_factor=0.25,
-            n_bs_sim=n_bs_sim,
-            n_bs_actual=166500,
-            n_drops=10000
-        )
+    aggregated_large_ra2rb1 = PostProcessor.aggregate_results(
+        dl_samples=dl_large_r.system_inr,
+        ul_samples=ul_large_r.system_inr,
+        ul_tdd_factor=0.25,
+        n_bs_sim=n_bs_sim,
+        n_bs_actual=285300,
+        n_drops=10000
+    )
 
-        aggregated_results_ra2rb1 = PostProcessor.aggregate_results(
-            dl_samples=dl_urb_r.system_dl_interf_power_per_mhz,
-            ul_samples=ul_urb_r.system_ul_interf_power_per_mhz,
-            ul_tdd_factor=0.25,
-            n_bs_sim=n_bs_sim,
-            n_bs_actual=303310,
-            n_drops=10000
-        )
+    aggregated_small_ra1rb1 = PostProcessor.aggregate_results(
+        dl_samples=dl_small_r.system_inr,
+        ul_samples=ul_small_r.system_inr,
+        ul_tdd_factor=0.25,
+        n_bs_sim=n_bs_sim,
+        n_bs_actual=30000,
+        n_drops=10000
+    )
 
-        #Para o micro existe apenas o Urbano 
-        # aggregated_results = aggregated_results_urb
+    aggregated_small_ra2rb1 = PostProcessor.aggregate_results(
+        dl_samples=dl_small_r.system_inr,
+        ul_samples=ul_small_r.system_inr,
+        ul_tdd_factor=0.25,
+        n_bs_sim=n_bs_sim,
+        n_bs_actual=30000,
+        n_drops=10000
+    )
 
-        # x, y = PostProcessor.cdf_from(aggregated_results)
-        # aggregated_plot.add_trace(
-        #     go.Scatter(x=x, y=y, mode='lines', name=legenda),
-        # )
 
-        x, y = PostProcessor.ccdf_from(aggregated_results_ra1rb1)
-        aggregated_ccdf_plot.add_trace(
-            go.Scatter(x=x, y=y, mode='lines', name="Ra1Rb1"),
-        )
-        
-        x, y = PostProcessor.ccdf_from(aggregated_results_ra2rb1)
-        aggregated_ccdf_plot.add_trace(
-            go.Scatter(x=x, y=y, mode='lines', name="Ra2Rb1"),
-        )
+    aggregated_comp_ra1rb1 = PostProcessor.aggregate_results(
+        dl_samples=dl_r.system_inr,
+        ul_samples=ul_r.system_inr,
+        ul_tdd_factor=0.25,
+        n_bs_sim=n_bs_sim,
+        n_bs_actual=166500,
+        n_drops=100000
+    )
 
-    # aggregated_plot = add_protection_criteria(aggregated_plot, interf_protection_criteria)
-    aggregated_ccdf_plot = add_protection_criteria(aggregated_ccdf_plot, interf_protection_criteria)
-    # aggregated_plot = adjust_range_x(aggregated_plot)
-    aggregated_ccdf_plot = adjust_range_x(aggregated_ccdf_plot)
+    aggregated_comp_ra2rb1 = PostProcessor.aggregate_results(
+        dl_samples=dl_r.system_inr,
+        ul_samples=ul_r.system_inr,
+        ul_tdd_factor=0.25,
+        n_bs_sim=n_bs_sim,
+        n_bs_actual=303310,
+        n_drops=100000
+    )
 
-plots = [*post_processor.plots, aggregated_plot, aggregated_ccdf_plot]
+    min_length = min(len(aggregated_large_ra1rb1), len(aggregated_small_ra1rb1))
+    aggregated_ra1rb1 = 10**(aggregated_large_ra1rb1[:min_length]/10) + 10**(aggregated_small_ra1rb1[:min_length]/10)
+    aggregated_ra1rb1 = 10 * np.log10(aggregated_ra1rb1)
+
+    min_length = min(len(aggregated_large_ra2rb1), len(aggregated_small_ra2rb1))
+    aggregated_ra2rb1 = 10**(aggregated_large_ra2rb1[:min_length]/10) + 10**(aggregated_small_ra2rb1[:min_length]/10)
+    aggregated_ra2rb1 = 10 * np.log10(aggregated_ra2rb1)
+
+    x, y = PostProcessor.ccdf_from(aggregated_ra1rb1)
+    aggregated_ccdf_plot.add_trace(
+        go.Scatter(x=x, y=y, mode='lines', line=dict(dash="solid", color="red"), name="Ra1Rb1 - Separado"),
+    )
+
+    x, y = PostProcessor.ccdf_from(aggregated_ra2rb1)
+    aggregated_ccdf_plot.add_trace(
+        go.Scatter(x=x, y=y, mode='lines', line=dict(dash="solid", color="blue"), name="Ra2Rb1 - Separado"),
+    )
+
+    x, y = PostProcessor.ccdf_from(aggregated_comp_ra1rb1)
+    aggregated_ccdf_plot.add_trace(
+        go.Scatter(x=x, y=y, mode='lines', line=dict(dash="dash", color="red"), name="Ra1Rb1 - Completo"),
+    )
+
+    x, y = PostProcessor.ccdf_from(aggregated_comp_ra2rb1)
+    aggregated_ccdf_plot.add_trace(
+        go.Scatter(x=x, y=y, mode='lines', line=dict(dash="dash", color="blue"), name="Ra2Rb1 - Completo"),
+    )
+
+
+aggregated_plot = add_protection_criteria(aggregated_plot, interf_protection_criteria)
+aggregated_plot = adjust_range_x(aggregated_plot)
+
+aggregated_ccdf_plot = add_protection_criteria(aggregated_ccdf_plot, interf_protection_criteria)
+aggregated_ccdf_plot = adjust_range_x(aggregated_ccdf_plot)
+
+# plots = [*post_processor.plots, aggregated_plot, aggregated_ccdf_plot]
+# plots = [*post_processor.plots, aggregated_ccdf_plot]
+plots = [*post_processor.plots]
+# plots = [aggregated_ccdf_plot]
 
 PostProcessor.save_plots(
     os.path.join(campaign_base_dir, "output"),
