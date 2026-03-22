@@ -109,6 +109,7 @@ class ParametersAntenna(ParametersBase):
         antenna_l_s: float = -25
         antenna_3_dB: float = None
         antenna_gain: float = None
+        antenna_cutting_angle: float = None 
 
         def validate(self, ctx):
             if None in [self.antenna_gain, self.antenna_3_dB]:
