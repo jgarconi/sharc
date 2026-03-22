@@ -351,7 +351,7 @@ class PropagationP619(Propagation):
         if station_a.is_space_station:
             earth_station_height = station_b.height
             a,b = station_b.get_pointing_vector_to(station_a)
-            b = b-90
+            b = 90 - b
             b[b<0] = 0
             elevation_angles["free_space"] = b
             earth_station_antenna_gain = station_b_gains
