@@ -1,9 +1,9 @@
 general:
   seed: 10
-  num_snapshots: 500
+  num_snapshots: 250
   overwrite_output: false
   output_dir: /home/juliana/Documentos/projetos/sharc/sharc/campaigns/resim_study_A.1_FSS/output/
-  output_dir_prefix: output_resim_study_A.1_FSS_DL_seed10
+  output_dir_prefix: out_resim_study_A.1_FSS_DL_seed_10
   system: SINGLE_SPACE_STATION
   imt_link: DOWNLINK
   enable_adjacent_channel: false

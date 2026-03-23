@@ -5,10 +5,10 @@ import pandas as pd
 from collections import defaultdict
 
 # Caminho base da campanha
-campaign_base_dir = "/home/juliana/Documentos/projetos/sharc/sharc/campaigns/resim_study_H.1_FSS/output"
+campaign_base_dir = "/home/juliana/Documentos/projetos/sharc/sharc/campaigns/resim_study_A.1_FSS/output"
 
 # Novos diretórios de saída
-output_final = os.path.join(campaign_base_dir, "output_resim_study_H.1_FSS")
+output_final = os.path.join(campaign_base_dir, "output_resim_study_A.1_FSS")
 
 os.makedirs(output_final, exist_ok=True)
 

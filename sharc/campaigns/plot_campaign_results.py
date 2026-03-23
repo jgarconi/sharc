@@ -120,14 +120,14 @@ if __name__ == '__main__':
     plotter = CCDFPlotter()
 
     plotter.add_csv(
-        "/home/juliana/Documentos/projetos/sharc/sharc/campaigns/resim_study_H.1_FSS/2MC_files/resim_study_H.1_FSS_DL_ra1rb1.csv",
-        "Study H.1 FSS - Ra1Rb1",
+        "/home/juliana/Documentos/projetos/sharc/sharc/campaigns/resim_study_A.1_FSS/2MC_files/resim_study_A.1_FSS_DL_ra1rb1.csv",
+        "Study A.1 FSS - Ra1Rb1",
         linestyle="-"
         )
         
     plotter.add_csv(
-        "/home/juliana/Documentos/projetos/sharc/sharc/campaigns/resim_study_H.1_FSS/2MC_files/resim_study_H.1_FSS_DL_ra2rb1.csv",
-        "Study H.1 FSS - Ra2Rb1",
+        "/home/juliana/Documentos/projetos/sharc/sharc/campaigns/resim_study_A.1_FSS/2MC_files/resim_study_A.1_FSS_DL_ra2rb1.csv",
+        "Study A.1 FSS - Ra2Rb1",
         linestyle="--"
         )
 
