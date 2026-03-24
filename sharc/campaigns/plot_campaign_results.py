@@ -3,7 +3,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 import matplotlib
-print(matplotlib.get_backend())
+# matplotlib.use('Qt5Agg')
+matplotlib.use('TkAgg')
 
 class CCDFPlotter:
 
@@ -120,19 +121,19 @@ if __name__ == '__main__':
     plotter = CCDFPlotter()
 
     plotter.add_csv(
-        "/home/juliana/Documentos/projetos/sharc/sharc/campaigns/resim_study_A.1_FSS/2MC_files/resim_study_A.1_FSS_DL_ra1rb1.csv",
-        "Study A.1 FSS - Ra1Rb1",
+        "/home/juliana/Documentos/projetos/sharc/sharc/campaigns/resim_study_C.2_FSS/2MC_files/resim_study_C.2_FSS_DL_ra1rb1.csv",
+        "Study C.2 FSS - Ra1Rb1",
         linestyle="-"
         )
         
     plotter.add_csv(
-        "/home/juliana/Documentos/projetos/sharc/sharc/campaigns/resim_study_A.1_FSS/2MC_files/resim_study_A.1_FSS_DL_ra2rb1.csv",
-        "Study A.1 FSS - Ra2Rb1",
+        "/home/juliana/Documentos/projetos/sharc/sharc/campaigns/resim_study_C.2_FSS/2MC_files/resim_study_C.2_FSS_DL_ra2rb1.csv",
+        "Study C.2 FSS - Ra2Rb1",
         linestyle="--"
         )
-
-    plotter.add_criterion("[-6 dB, 0.03%]", 0.0003, -6, "--", "gray")
-    plotter.add_criterion("[-7 dB, 0.1%]", 0.001, -7, "-.", "gray")
+    
     plotter.add_criterion("[-10.5 dB, 20%]", 0.2, -10.5, ":", "gray")
+    plotter.add_criterion("[-7 dB, 0.1%]", 0.001, -7, "-.", "gray")
+    plotter.add_criterion("[-6 dB, 0.03%]", 0.0003, -6, "--", "gray")
 
     plotter.plot()

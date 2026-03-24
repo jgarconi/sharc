@@ -11,7 +11,7 @@ inicio = time.time()
 
 # Define o diretório base da campanha
 campaign_base_dir = str((Path(__file__) / "..").resolve())
-dl_dir = os.path.join(campaign_base_dir, "resim_study_A.1_FSS", "output")
+dl_dir = os.path.join(campaign_base_dir, "resim_study_C.2_FSS", "output")
 
 # Inicializa o pós-processador
 post_processor = PostProcessor()
@@ -63,7 +63,7 @@ aggregated_results_ra1rb1 = PostProcessor.aggregate_results(
     ul_samples=dl_urb_r.system_inr,
     ul_tdd_factor=0,
     n_bs_sim=n_bs_sim,
-    n_bs_actual=116030,
+    n_bs_actual=17815,
     n_aggregate=10000,
     )
 aggregated_results_ra2rb1 = PostProcessor.aggregate_results(
@@ -71,13 +71,13 @@ aggregated_results_ra2rb1 = PostProcessor.aggregate_results(
     ul_samples=dl_urb_r.system_inr,
     ul_tdd_factor=0,
     n_bs_sim=n_bs_sim,
-    n_bs_actual=515930,
+    n_bs_actual=79212,
     n_aggregate=10000
     )
 
-save_samplelist_as_csv(aggregated_results_ra1rb1, f"resim_study_A.1_FSS_DL_ra1rb1", os.path.join(campaign_base_dir, "resim_study_A.1_FSS", "2MC_files"))
+save_samplelist_as_csv(aggregated_results_ra1rb1, f"resim_study_C.2_FSS_DL_ra1rb1", os.path.join(campaign_base_dir, "resim_study_C.2_FSS", "2MC_files"))
 
-save_samplelist_as_csv(aggregated_results_ra2rb1, f"resim_study_A.1_FSS_DL_ra2rb1", os.path.join(campaign_base_dir, "resim_study_A.1_FSS", "2MC_files"))
+save_samplelist_as_csv(aggregated_results_ra2rb1, f"resim_study_C.2_FSS_DL_ra2rb1", os.path.join(campaign_base_dir, "resim_study_C.2_FSS", "2MC_files"))
 
 fim = time.time()
 tempo_execucao = fim - inicio
