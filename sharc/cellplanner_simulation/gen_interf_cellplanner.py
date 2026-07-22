@@ -25,7 +25,7 @@ from sharc.propagation.propagation import Propagation
 YAML_PATH = "/home/juliana/Documentos/projetos/sharc/sharc/cellplanner_simulation/input/parameters_FS_8000.yaml"          # <<< AJUSTE o caminho >>>
 CSV_POSICOES = "/home/juliana/Documentos/projetos/sharc/sharc/cellplanner_simulation/input/positions_imt_fs.csv"          # <<< AJUSTE o caminho >>>
 CSV_PATHLOSS = "/home/juliana/Documentos/projetos/sharc/sharc/cellplanner_simulation/input/pathloss_azim_elev.csv"        # <<< AJUSTE o caminho >>>
-NUM_SNAPSHOTS = 100                              # <<< AJUSTE (ou leia do YAML) >>_
+NUM_SNAPSHOTS = 500                              # <<< AJUSTE (ou leia do YAML) >>_
 
 
 def cell_number(cell_id: str) -> int:
@@ -86,7 +86,7 @@ bs_azimuth = np.tile([30.0, 150.0, 270.0], len(bs_entries) // 3)
 fs_ids = sorted(fs_x.keys())
 num_bs = len(bs_entries)
 num_fs = len(fs_ids)
-print(f"{num_bs} células IMT, {num_fs} FS lidas de {CSV_POSICOES}")
+print(f"{num_bs} BS IMT e {num_fs} EP FS lidos de {CSV_POSICOES}")
 
 # ------------------------------------------------------------------
 # 2) Ler path loss isotrópico (EPxx-CellYYYY -> dB), indexado por número
@@ -110,7 +110,8 @@ num_snapshots = NUM_SNAPSHOTS  # ou: parameters.general.num_snapshots
 resultados = []
 
 for fs_idx, fs_id in enumerate(fs_ids):
-    print(f"\n=== {fs_id} ({fs_idx + 1}/{num_fs}) ===")
+    fs_seed = parameters.general.seed + fs_idx
+    print(f"\n=== {fs_id} ({fs_idx + 1}/{num_fs}) seed: {fs_seed} ===")
 
     # posição fixa desta FS
     parameters.single_earth_station.geometry.location.type = "FIXED"
@@ -129,12 +130,12 @@ for fs_idx, fs_id in enumerate(fs_ids):
     pl_vector = np.array([
         pl_lookup[(fs_id, n)] for n in bs_cell_numbers
     ])
-    rand_gen = np.random.RandomState(parameters.general.seed)
+    rand_gen = np.random.RandomState(fs_seed)
     simulation.propagation_system = PropagationFixedIsotropic(rand_gen, pl_vector)
 
     simulation.initialize()
 
-    seed_gen = np.random.RandomState(parameters.general.seed)
+    seed_gen = np.random.RandomState(fs_seed)
     for snap in range(1, num_snapshots + 1):
         seed = int(seed_gen.randint(1, 2**32 - 1))
         simulation.snapshot(write_to_file=False, snapshot_number=snap, seed=seed)
@@ -156,9 +157,9 @@ for fs_idx, fs_id in enumerate(fs_ids):
 # ------------------------------------------------------------------
 # 4) Exportar
 # ------------------------------------------------------------------
-with open("resultado_inr_por_fs_montecarlo.csv", "w", newline="", encoding="utf-8") as f:
+with open("/home/juliana/Documentos/projetos/sharc/sharc/cellplanner_simulation/output/inr_interf_result.csv", "w", newline="", encoding="utf-8") as f:
     writer = csv.DictWriter(f, fieldnames=["fs_id", "snapshot", "inr_db", "interf_dbm"])
     writer.writeheader()
     writer.writerows(resultados)
 
-print("\nResultado salvo em resultado_inr_por_fs_montecarlo.csv")
+print("\nResultado salvo em /home/juliana/Documentos/projetos/sharc/sharc/cellplanner_simulation/output/inr_interf_result.csv")

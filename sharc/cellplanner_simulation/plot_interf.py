@@ -9,8 +9,8 @@ from collections import defaultdict
 import numpy as np
 import matplotlib.pyplot as plt
 
-CSV_RESULTADO = "/home/juliana/Documentos/projetos/sharc/sharc/cellplanner_simulation/output/resultado_inr_por_fs_montecarlo.csv"  # <<< AJUSTE >>>
-INR_THRESHOLD = -6.0  # <<< AJUSTE >>> critério de proteção (dB), ex: -6 dB (I/N)
+CSV_RESULTADO = "/home/juliana/Documentos/projetos/sharc/sharc/cellplanner_simulation/output/inr_interf_result.csv"  # <<< AJUSTE >>>
+INR_THRESHOLD = -10.0  # <<< AJUSTE >>> critério de proteção (dB), ex: -6 dB (I/N)
 
 # ------------------------------------------------------------------
 # 1) Ler resultados
@@ -49,16 +49,16 @@ fig, ax = plt.subplots(figsize=(13, 10))
 
 # --- CDF agregada (todas as FS juntas) ---
 # ax = axes[0, 1]
-# all_inr = np.concatenate(list(data_inr.values()))
-# vals = np.sort(all_inr)
-# cdf = np.arange(1, len(vals) + 1) / len(vals)
-# ax.plot(vals, cdf, color='crimson')
-# ax.axvline(INR_THRESHOLD, color='k', linestyle='--', linewidth=1)
-# pct_exceed = 100 * np.mean(all_inr > INR_THRESHOLD)
-# ax.set_title(f"CDF agregada do INR (todas as FS)\nP(INR > {INR_THRESHOLD} dB) = {pct_exceed:.2f}%")
-# ax.set_xlabel("INR [dB]")
-# ax.set_ylabel("Probabilidade (CDF)")
-# ax.grid(alpha=0.3)
+all_inr = np.concatenate(list(data_inr.values()))
+vals = np.sort(all_inr)
+cdf = np.arange(1, len(vals) + 1) / len(vals)
+ax.plot(vals, cdf, color='crimson')
+ax.axvline(INR_THRESHOLD, color='k', linestyle='--', linewidth=1)
+pct_exceed = 100 * np.mean(all_inr > INR_THRESHOLD)
+ax.set_title(f"CDF agregada do INR (todas as FS)\nP(INR > {INR_THRESHOLD} dB) = {pct_exceed:.2f}%")
+ax.set_xlabel("INR [dB]")
+ax.set_ylabel("Probabilidade (CDF)")
+ax.grid(alpha=0.3)
 
 # --- Boxplot do INR por FS ---
 # ax = axes[1, 0]
@@ -71,17 +71,17 @@ fig, ax = plt.subplots(figsize=(13, 10))
 
 # --- CDF da interferência agregada (dBm) ---
 # ax = axes[1, 1]
-all_interf = np.concatenate(list(data_interf.values()))
-vals = np.sort(all_interf)
-cdf = np.arange(1, len(vals) + 1) / len(vals)
-ax.plot(vals, cdf, color='navy')
-ax.set_xlabel("Interferência recebida [dBm]")
-ax.set_ylabel("Probabilidade (CDF)")
-ax.set_title("CDF da interferência agregada (todas as FS)")
-ax.grid(alpha=0.3)
+# all_interf = np.concatenate(list(data_interf.values()))
+# vals = np.sort(all_interf)
+# cdf = np.arange(1, len(vals) + 1) / len(vals)
+# ax.plot(vals, cdf, color='navy')
+# ax.set_xlabel("Interferência recebida [dBm]")
+# ax.set_ylabel("Probabilidade (CDF)")
+# ax.set_title("CDF da interferência agregada (todas as FS)")
+# ax.grid(alpha=0.3)
 
 plt.tight_layout()
-plt.savefig("inr_interferencia.png", dpi=150)
+# plt.savefig("inr_interferencia.png", dpi=150)
 plt.show()
 
 # ------------------------------------------------------------------
